@@ -1,0 +1,46 @@
+.break-logs-container {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.break-logs-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.break-logs-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.break-logs-table th,
+.break-logs-table td {
+  padding: 10px 12px;
+  border: 1px solid #e0e0e0;
+  text-align: left;
+}
+
+.break-logs-table th {
+  background-color: #f5f6fa;
+  font-weight: 600;
+}
+
+.break-logs-table tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.no-data {
+  text-align: center;
+  padding: 12px;
+  color: #888;
+}
+
+.break-logs-loading {
+  text-align: center;
+  padding: 20px;
+  font-size: 1.2rem;
+}

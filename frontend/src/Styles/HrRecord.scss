@@ -1,0 +1,167 @@
+.hr-record {
+  padding: 1.5rem;
+  background-color: #f3f4f6;
+  min-height: 100vh;
+
+  .summary-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .card {
+      background: white;
+      padding: 1.5rem;
+      text-align: center;
+      border-radius: 0.5rem;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.08);
+
+      h2 {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #000;
+      }
+
+      p {
+        margin-top: 0.25rem;
+        color: #6b7280;
+      }
+    }
+  }
+
+  .hiring-section {
+    width: 100%;
+    margin-bottom: 1.5rem;
+
+    .hiring-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #438fdb;
+      color: white;
+      padding: 1.5rem;
+      border-radius: 0.5rem;
+
+      img {
+        width: 5rem;
+        height: 5rem;
+        object-fit: cover;
+      }
+
+      a {
+        text-decoration: underline;
+        font-weight: 500;
+        display: inline-block;
+        margin-top: 0.25rem;
+        color: white;
+      }
+    }
+  }
+
+  .main-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .task-statistics, .schedule, .pending-concerns {
+      background: white;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.08);
+
+      h4 {
+        color: #374151;
+        font-weight: 600;
+        margin-bottom: 1rem;
+      }
+    }
+
+    .task-statistics {
+      .chart-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        .pie-wrapper {
+          width: 16rem;
+          height: 16rem;
+        }
+
+        .legend {
+          margin-top: 1rem;
+          font-size: 0.875rem;
+          display: flex;
+          gap: 0.5rem;
+
+          .completed {
+            color: #2291c5;
+            font-weight: 600;
+          }
+
+          .in-progress {
+            color: #15faae;
+            font-weight: 600;
+          }
+
+          .on-hold {
+            color: #e36262;
+            font-weight: 600;
+          }
+        }
+      }
+    }
+
+    .schedule {
+      ul {
+        font-size: 0.875rem;
+        color: #6b7280;
+
+        li {
+          display: flex;
+          justify-content: space-between;
+          margin-bottom: 0.5rem;
+        }
+      }
+    }
+
+    .pending-concerns {
+      max-height: 100%;
+      overflow-y: auto;
+
+      ul {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+
+        li {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+
+          img {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 9999px;
+          }
+
+          p:first-child {
+            font-weight: 600;
+          }
+
+          p:last-child {
+            font-size: 0.75rem;
+            color: #6b7280;
+          }
+        }
+      }
+    }
+  }
+}

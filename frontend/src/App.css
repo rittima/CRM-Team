@@ -1,0 +1,8 @@
+/* #mobile-block {
+  @apply block md:hidden text-center text-red-600 text-xl p-6;
+}
+
+
+#desktop-app {
+  @apply hidden md:flex;
+} */
