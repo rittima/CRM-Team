@@ -1,5 +1,5 @@
-const express = require("express");
-const { startBreak, stopBreak, getBreakLogs, getBreakStatus } = require("../controllers/breakController");
+import express from "express";
+import { startBreak, stopBreak, getBreakLogs, getBreakStatus } from "../controllers/breakController.js";
 
 const router = express.Router();
 
@@ -8,4 +8,4 @@ router.post("/stop", stopBreak);
 router.get("/logs/:userId", getBreakLogs);
 router.get("/status/:userId", getBreakStatus);
 
-module.exports = router;
+export default router;

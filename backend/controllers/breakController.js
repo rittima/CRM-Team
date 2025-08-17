@@ -1,11 +1,11 @@
-const Break = require("../models/Break");
-const mongoose = require("mongoose");
+import Break from "../models/Break.js";
+import mongoose from "mongoose";
 
 // Use a valid ObjectId string from your User collection or just a random valid ObjectId for testing
 const DUMMY_USER_ID = "64d3e4b7f2a4c2a1b1234567"; // 24 hex chars
 
 // startBreak
-exports.startBreak = async (req, res) => {
+export const startBreak = async (req, res) => {
   try {
     const { userId } = req.body;
     if (!userId) return res.status(400).json({ message: "userId required" });
@@ -21,7 +21,7 @@ exports.startBreak = async (req, res) => {
 };
 
 // stopBreak
-exports.stopBreak = async (req, res) => {
+export const stopBreak = async (req, res) => {
   try {
     const { breakId, userId } = req.body;
     let breakData = null;
@@ -68,7 +68,7 @@ exports.stopBreak = async (req, res) => {
   }
 };
 
-exports.getBreakStatus = async (req, res) => {
+export const getBreakStatus = async (req, res) => {
   try {
     const { userId } = req.params;
     if (!mongoose.isValidObjectId(userId)) {
@@ -87,7 +87,7 @@ exports.getBreakStatus = async (req, res) => {
 };
 
 // getBreakLogs
-exports.getBreakLogs = async (req, res) => {
+export const getBreakLogs = async (req, res) => {
   try {
     const { userId } = req.params;
     const logs = await Break.find({ userId }).sort({ startTime: -1 });

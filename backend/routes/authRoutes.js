@@ -1,9 +1,13 @@
-// const express = require("express");
-// const router = express.Router();
-// const { loginUser, getMe } = require("../controllers/authController");
-// const { protect } = require("../middleware/authMiddleware");
+// backend/routes/authRoutes.js
+import express from "express";
+import { registerUser, loginUser, changePassword } from "../controllers/authController.js";
+import { protect } from "../middleware/authMiddleware.js";
 
-// router.post("/login", loginUser);
-// router.get("/me", protect, getMe);
+const router = express.Router();
 
-// module.exports = router;
+router.post("/register", registerUser);
+router.post("/login", loginUser);
+router.put("/change-password", protect, changePassword);
+router.get("/me", protect, (req, res) => res.status(200).json(req.user));
+
+export default router;

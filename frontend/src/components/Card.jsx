@@ -1,34 +1,67 @@
-import { User2 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import React from "react";
+import { useAuth } from "../context/AuthContext";
 
 const Card = () => {
   const { user } = useAuth();
 
-  if (!user) {
-    return (
-      <div className="p-6 text-center text-red-500 font-semibold">
-        Employee data not found.
-      </div>
-    );
-  }
+  const currentEmployee = {
+    name: user?.name || "Employee",
+    id: user?.employeeId || "Not Set",
+    joiningDate: user?.createdAt
+      ? new Date(user.createdAt).toLocaleDateString()
+      : "Not Available",
+    designation: user?.designation || "Not Set",
+    department: user?.domain || "Not Set",
+    project: "Project Assignment Pending",
+    status: user?.profileCompleted ? "Profile Completed" : "Profile Incomplete",
+  };
 
   return (
-    <div>
-      <div className="grid grid-cols-1 gap-6 p-6">
-        {/* Employee Info */}
-        <div className="bg-blue-50 shadow-md hover:shadow-lg transition-shadow duration-300 p-6">
-          <div className="flex items-center gap-2 flex-wrap mb-6">
-            <User2 className="w-6 h-6 text-gray-800" />
-            <h3 className="text-2xl font-bold text-gray-800">{user?.name}</h3>
-          </div>
-          <div className="grid grid-cols-2 p-3">
-            <p className="text-gray-600 text-xl mb-3"><b>Emp ID :</b> {user?.id}</p>
-            <p className="text-gray-600 text-xl mb-3"><b>Starting day :</b> {user?.joiningDate}</p>
-            <p className="text-gray-600 text-xl mb-3"><b>Designation :</b> {user?.designation}</p>
-            <p className="text-gray-600 text-xl mb-3"><b>Department :</b> {user?.department}</p>
+    <div className="p-6 grid gap-6">
+      <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition">
+        <div className="flex flex-col gap-3">
+          {/* Employee Name */}
+          <h2 className="text-xl font-bold text-gray-800">
+            {currentEmployee.name}
+          </h2>
+
+          {/* Employee Details in Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-gray-700">
+            <p>
+              <span className="font-semibold text-blue-900">Employee ID:</span>{" "}
+              {currentEmployee.id}
+            </p>
+            <p>
+              <span className="font-semibold text-blue-900">Designation:</span>{" "}
+              {currentEmployee.designation}
+            </p>
+            <p>
+              <span className="font-semibold text-blue-900">Domain:</span>{" "}
+              {currentEmployee.department}
+            </p>
+            <p>
+              <span className="font-semibold text-blue-900">Member Since:</span>{" "}
+              {currentEmployee.joiningDate}
+            </p>
+            <p>
+              <span className="font-semibold text-blue-900">Project:</span>{" "}
+              {currentEmployee.project}
+            </p>
+            <p>
+              <span className="font-semibold text-blue-900">Status:</span>{" "}
+              <span
+                className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  currentEmployee.status === "Active"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-red-100 text-red-700"
+                }`}
+              >
+                {currentEmployee.status}
+              </span>
+            </p>
           </div>
         </div>
-    </div>
+      </div>
     </div>
   );
 };

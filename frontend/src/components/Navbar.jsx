@@ -1,58 +1,71 @@
-
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext.jsx";
-import Modal from "./Modal.jsx";
+import { UserCheck, LogOut, TimerIcon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Attendance from "../pages/Attendance.jsx";
-import { UserCheck,  LogOut, TimerIcon } from "lucide-react";
-import "../Styles/Navbar.scss";
 
 const Navbar = ({ onOpenTimer }) => {
   const { user, logout } = useAuth();
   const [showAttendanceModal, setShowAttendanceModal] = useState(false);
+  
+  const navigate = useNavigate();
+  const [showTimerModal, setShowTimerModal] = useState(false);
 
   return (
-    <nav className="navbar">
-      <div className="navbar-container">
-        <div className="text-lg font-semibold text-gray-800">
-          Welcome to XYZ Pvt Ltd
+    <nav className="w-full bg-white shadow-md border-b border-gray-200">
+      <div className="max-w-8xl mx-auto px-6 py-3 flex items-center justify-between">
+        
+        {/* Brand */}
+        <div className="text-xl font-bold text-gray-800 tracking-wide">
+          Welcome to <span className="text-gray-00">XYZ Pvt Ltd</span>
         </div>
 
+        {/* Right side */}
         {user ? (
-          <div className="navbar-buttons">
+          <div className="flex items-center gap-4">
+            {/* Attendance */}
             <button
               onClick={() => setShowAttendanceModal(true)}
-              className="navbar-btn attendance-btn"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition"
             >
-              <UserCheck className="icon" />
-              Attendance
+              <UserCheck className="w-5 h-5" />
+              <span className="hidden sm:inline">Attendance</span>
             </button>
 
+            {/* Timer */}
             <button
               onClick={onOpenTimer}
-              className="navbar-btn timer-btn"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-green-50 text-green-600 hover:bg-green-100 transition"
             >
-              <TimerIcon className="icon" />
-              Timer
+              <TimerIcon className="w-5 h-5" />
+              <span className="hidden sm:inline">Timer</span>
             </button>
 
-            <button onClick={logout} className="navbar-btn logout-btn">
-              <LogOut className="icon" />
-              Logout
+            {/* Logout */}
+            <button
+              onClick={logout}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition"
+            >
+              <LogOut className="w-5 h-5" />
+              <span className="hidden sm:inline">Logout</span>
             </button>
           </div>
         ) : (
-          <span className="not-logged-in">You are not Sign-in</span>
+          <span className="text-sm text-gray-500 italic">
+            You are not signed in
+          </span>
         )}
       </div>
+      {/* Attendance Fullscreen */}
+      {showAttendanceModal && (
+        <Attendance onClose={() => setShowAttendanceModal(false)} />
+      )}
 
-      {/* Attendance Modal */}
-      <Modal
-        show={showAttendanceModal}
-        onClose={() => setShowAttendanceModal(false)}
-      >
-        <Attendance />
-      </Modal>
-
+      {/* Timer Modal
+      <TimerModal
+        isOpen={showTimerModal}
+        onClose={() => setShowTimerModal(false)}
+      /> */}
     </nav>
   );
 };

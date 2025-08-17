@@ -1,44 +1,129 @@
-// const User = require("../models/User");
-// const jwt = require("jsonwebtoken");
-// const bcrypt = require("bcryptjs");
+// backend/controllers/authController.js
+import jwt from "jsonwebtoken";
+import User from "../model/User.js";
 
-// const loginUser = async (req, res) => {
-//   const { email, password } = req.body;
+const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || "30d" });
 
-//   try {
-//     const user = await User.findOne({ email });
+export const registerUser = async (req, res) => {
+  try {
+    const { employeeId, name, email } = req.body;
+    if (!employeeId || !name || !email) {
+      return res.status(400).json({ message: "Employee ID, name, and email are required" });
+    }
 
-//     if (!user) return res.status(400).json({ message: "User not found" });
+    // Check if email already exists
+    const emailExists = await User.findOne({ email });
+    if (emailExists) {
+      return res.status(409).json({ message: "Email already in use" });
+    }
 
-//     const isMatch = await bcrypt.compare(password, user.password);
-//     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
+    // Check if employee ID already exists
+    const employeeIdExists = await User.findOne({ employeeId });
+    if (employeeIdExists) {
+      return res.status(409).json({ message: "Employee ID already in use" });
+    }
 
-//     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-//       expiresIn: "7d"
-//     });
+    // Generate a default password (employee can change it later)
+    // Using a combination of employeeId and a default suffix for initial password
+    const defaultPassword = `${employeeId}@2025`;
 
-//     res.json({
-//       token,
-//       user: {
-//         _id: user._id,
-//         name: user.name,
-//         email: user.email
-//       }
-//     });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).send("Server Error");
-//   }
-// };
+    const user = await User.create({ 
+      employeeId,
+      name, 
+      email, 
+      password: defaultPassword, 
+      role: "employee" // Default role for all new signups
+    });
 
-// const getMe = async (req, res) => {
-//   try {
-//     const user = await User.findById(req.user.id).select("-password");
-//     res.json(user);
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).send("Server Error");
-//   }
-// };
+    const safe = { 
+      _id: user._id, 
+      employeeId: user.employeeId,
+      name: user.name, 
+      email: user.email, 
+      role: user.role 
+    };
 
-// module.exports = { loginUser, getMe };
+    return res.status(201).json({ 
+      token: signToken(user._id), 
+      ...safe,
+      message: `Employee registered successfully. Default password: ${defaultPassword}. Please change it after first login.`
+    });
+  } catch (err) {
+    console.error("Register error:", err.message);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    // Find user by email only
+    const user = await User.findOne({ email: email });
+    
+    if (!user || !(await user.matchPassword(password))) {
+      return res.status(401).json({ message: "Invalid email or password" });
+    }
+    
+    const safe = { 
+      _id: user._id, 
+      employeeId: user.employeeId,
+      name: user.name, 
+      email: user.email, 
+      role: user.role 
+    };
+    
+    return res.status(200).json({ token: signToken(user._id), ...safe });
+  } catch (err) {
+    console.error("Login error:", err.message);
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Change user password
+export const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user._id;
+
+    // Validation
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: "Current password and new password are required" });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: "New password must be at least 6 characters long" });
+    }
+
+    // Find user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Verify current password
+    const isCurrentPasswordValid = await user.matchPassword(currentPassword);
+    
+    if (!isCurrentPasswordValid) {
+      return res.status(400).json({ message: "Current password is incorrect" });
+    }
+
+    // Check if new password is different from current password
+    const isSamePassword = await user.matchPassword(newPassword);
+    if (isSamePassword) {
+      return res.status(400).json({ message: "New password must be different from current password" });
+    }
+
+    // Update password
+    user.password = newPassword;
+    await user.save();
+    
+    return res.status(200).json({ 
+      message: "Password changed successfully" 
+    });
+
+  } catch (error) {
+    console.error("Change password error:", error);
+    return res.status(500).json({ message: "Server error while changing password" });
+  }
+};

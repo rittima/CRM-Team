@@ -1,28 +1,24 @@
-import { useAuth } from '../context/AuthContext';
-import { Clipboard } from 'lucide-react';
-import Timer from './Timer';
+import { useAuth } from "../context/AuthContext";
+import { ClipboardList } from "lucide-react";
+import Timer from "./Timer"; // <-- use this as TaskTimer
 
 const DashCard = ({ tasks, onSaveTask, showTimerModal, onOpenTimer, onCloseTimer }) => {
   const { user } = useAuth();
 
-  if (!user) {
-    return (
-      <div className="p-6 text-center text-red-500 font-semibold">
-        Employee data not found.
-      </div>
-    );
-  }
-
   return (
     <div className="grid grid-cols-1 gap-6 p-6">
-      <div className="bg-blue-50 shadow-md p-8">
+      <div className="bg-white shadow-lg rounded-2xl p-8 border border-gray-100">
+        {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2 flex-wrap">
-            <Clipboard className="w-6 h-6 text-gray-800" />
-            <h3 className="text-2xl font-bold text-gray-800">Assigned Task</h3>
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-100 rounded-full">
+              <ClipboardList className="w-6 h-6 text-blue-700" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-800">Assigned Tasks</h3>
           </div>
+
           <span
-            className={`px-4 py-2 text-sm font-semibold rounded-full ${
+            className={`px-4 py-1.5 text-sm font-medium rounded-full shadow-sm ${
               user?.status === "Completed"
                 ? "bg-green-100 text-green-700"
                 : user?.status === "In Progress"
@@ -30,51 +26,68 @@ const DashCard = ({ tasks, onSaveTask, showTimerModal, onOpenTimer, onCloseTimer
                 : "bg-red-100 text-red-700"
             }`}
           >
-            {user?.status}
+            {user?.status || "Inactive"}
           </span>
         </div>
 
-        <p className="text-gray-600 text-lg mb-4">
-          <b>Project Working on :</b> {user?.project}
+        {/* Project Info */}
+        <p className="text-gray-700 text-lg mb-6">
+          <span className="font-semibold text-gray-900">Project Working On:</span>{" "}
+          {user?.project || "Not assigned"}
         </p>
-        <div className='flex justify-between'>
-          <p className="text-gray-600 text-lg mb-3 font-semibold">
-            Assigned Task Report:
+
+        {/* Assigned Tasks Section */}
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-gray-800 text-lg font-semibold">
+            Assigned Task Report
           </p>
           <button
             onClick={onOpenTimer}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            className="px-4 py-2 bg-blue-600 text-white shadow hover:bg-blue-700 transition"
           >
             + Task with Timer
           </button>
         </div>
 
+        {/* Task List */}
         {tasks.length === 0 ? (
-          <p className="text-base text-gray-500 italic py-4">No tasks added yet.</p>
+          <div className=" bg-yellow-100 rounded-lg"> 
+            <p className="text-base text-gray-500 italic py-6 font-medium text-center">
+              No tasks added yet.
+            </p>
+          </div>
         ) : (
           <ul className="space-y-4">
             {tasks.map((task, index) => (
-              <li key={index} className="p-4 bg-gray-100 rounded shadow">
-                <p className="font-bold">{task.title}</p>
-                <p className="text-sm text-gray-600">{task.description}</p>
-                {task.timeTaken && (
-                  <p className="text-green-700 font-semibold">
-                    Time Taken: {task.timeTaken}
-                  </p>
-                )}
+              <li
+                key={index}
+                className="p-4 bg-blue-50 border border-gray-100 rounded-xl hover:shadow-md transition flex flex-col"
+              >
+                {/* Header with colored dot and title */}
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center">
+                    <span className="w-3 h-3 bg-blue-700 rounded-full mr-3" />
+                    <p className="font-semibold text-gray-900 text-lg">{task.title}</p>
+                  </div>
+
+                  {/* Time Taken */}
+                  {task.timeTaken && (
+                    <p className="text-green-700 font-medium text-sm">
+                      ⏱ Time Taken: {task.timeTaken}
+                    </p>
+                  )}
+                </div>
+              
+                {/* Description */}
+                <p className="text-gray-600 text-sm mb-1 ml-6">{task.description}</p>
               </li>
             ))}
           </ul>
+
         )}
       </div>
 
-      {/* <button
-        onClick={onOpenTimer}
-        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-      >
-        Add Task with Timer
-      </button> */}
-
+      {/* Timer Modal */}
       <Timer
         isOpen={showTimerModal}
         onClose={onCloseTimer}

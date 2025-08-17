@@ -1,7 +1,7 @@
-const Timer = require("../models/Timer");
+import Timer from "../models/Timer.js";
 
 // Start (Check-In)
-const startTimer = async (req, res) => {
+export const startTimer = async (req, res) => {
   const { userId } = req.body;
   if (!userId) return res.status(400).json({ error: "userId is required" });
 
@@ -34,7 +34,7 @@ const startTimer = async (req, res) => {
 };
 
 // Stop (Check-Out)
-const stopTimer = async (req, res) => {
+export const stopTimer = async (req, res) => {
   const { userId } = req.body;
   if (!userId) return res.status(400).json({ error: "userId is required" });
 
@@ -64,7 +64,7 @@ const stopTimer = async (req, res) => {
 };
 
 // Get logs for a user
-const getLogs = async (req, res) => {
+export const getLogs = async (req, res) => {
   const { userId } = req.params;
   if (!userId) return res.status(400).json({ error: "userId is required" });
 
@@ -74,10 +74,4 @@ const getLogs = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch logs" });
   }
-};
-
-module.exports = {
-  startTimer,
-  stopTimer,
-  getLogs,
 };

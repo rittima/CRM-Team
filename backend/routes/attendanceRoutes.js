@@ -1,12 +1,25 @@
 // routes/attendanceRoutes.js
-const express = require("express");
+import express from "express";
+import { 
+  checkIn, 
+  checkOut, 
+  getAllAttendance, 
+  getTodayStatus, 
+  getUserAttendance,
+  getAttendanceStatus
+} from "../controllers/attendanceController.js";
+import { protect } from "../middleware/authMiddleware.js";
+
 const router = express.Router();
-const { checkIn, checkOut, getAllAttendance } = require("../controllers/attendanceController");
 
-router.post("/checkin", checkIn);
-router.post("/checkout", checkOut);
+// Check-in and Check-out routes
+router.post("/checkin", protect, checkIn);
+router.post("/checkout", protect, checkOut);
 
-router.get("/logs", getAllAttendance);
-// router.get("/status/:userId", getTodayStatus);
+// Get attendance records
+router.get("/logs", protect, getAllAttendance);
+router.get("/status/:userId", protect, getTodayStatus);
+router.get("/status/:userId/:date", protect, getAttendanceStatus);
+router.get("/user/:userId", protect, getUserAttendance);
 
-module.exports = router;
+export default router;

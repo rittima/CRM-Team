@@ -1,13 +1,14 @@
-const express = require("express");
-const router = express.Router();
-const {
+import express from "express";
+import {
   startTimer,
   stopTimer,
   getLogs,
-} = require("../controllers/timerController");
+} from "../controllers/timerController.js";
+
+const router = express.Router();
 
 router.post("/start", startTimer);
 router.post("/stop", stopTimer);
 router.get("/logs/:userId", getLogs);
 
-module.exports = router;
+export default router;

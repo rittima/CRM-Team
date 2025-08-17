@@ -13,9 +13,11 @@ import TimesheetsAndLeaves from './pages/TimesheetsAndLeaves';
 import StaffWorkload from './pages/StaffWorkload';
 import Expenses from './pages/Expenses';
 import PaySlips from './pages/PaySlips';
-import TimerLogs from './pages/TimerLogs';
-import BreakLogs from './pages/BreakLogs';
 import { useState } from 'react';
+import Signup from './pages/Signup';
+import Profile from './pages/Profile';
+import LeaveManagement from './pages/LeaveManagement';
+import HrProject from './hrRecords/HrProject';
 
 function App() {
   const [tasks, setTasks] = useState([]);
@@ -49,8 +51,10 @@ function App() {
             onSaveTask={handleSaveTask}
           />
 
-          <main className="flex-1 p-4">
+          <main className="flex-1 bg-gray-50">
             <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
               <Route path="/" element={<ProtectedRoute><Dashboard 
                 tasks={tasks}
                 handleSaveTask={handleSaveTask}
@@ -60,15 +64,14 @@ function App() {
               /></ProtectedRoute>} />
               <Route path="/projects" element={<ProtectedRoute><Projects /></ProtectedRoute>} />
               <Route path="/support" element={<ProtectedRoute><Report /></ProtectedRoute>} />
-              <Route path="/login" element={<Login />} />
               <Route path="*" element={<NotFound />} />
               <Route path='/hr' element={<ProtectedRoute><HrRecord/> </ProtectedRoute>} />
-              <Route path='/timesheet' element={<ProtectedRoute><TimesheetsAndLeaves/> </ProtectedRoute>} />
+              <Route path='/hrproject' element={<ProtectedRoute><HrProject/> </ProtectedRoute>} />
+              <Route path='/profile' element={<ProtectedRoute><Profile/> </ProtectedRoute>} />
+              <Route path='/timesheet' element={<ProtectedRoute><LeaveManagement/> </ProtectedRoute>} />
               <Route path='/workload' element={<ProtectedRoute><StaffWorkload/> </ProtectedRoute>} />
               <Route path='/expenses' element={<ProtectedRoute><Expenses/> </ProtectedRoute>} />
               <Route path='/payslip' element={<ProtectedRoute><PaySlips/> </ProtectedRoute>} />              
-              <Route path="/logs" element={<TimerLogs />} />
-              <Route path="/break-logs" element={<BreakLogs />} />
             </Routes>
           </main>
         </div>

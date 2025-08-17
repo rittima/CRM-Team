@@ -119,6 +119,20 @@ const employees = [
 
 export default employees;
 
+// hrData.js
+export const hrData = [
+  { empId: "EMP001", empEmail: "alice.johnson@example.com", projectId: "PRJ001" },
+  { empId: "EMP003", empEmail: "charlie.lee@example.com", projectId: "PRJ001" },
+  { empId: "EMP004", empEmail: "diana.prince@example.com", projectId: "PRJ001" },
+  { empId: "EMP006", empEmail: "fiona.gallagher@example.com", projectId: "PRJ002" },
+  { empId: "EMP007", empEmail: "george.michael@example.com", projectId: "PRJ003" },
+  { empId: "EMP008", empEmail: "hannah.baker@example.com", projectId: "PRJ004" },
+  { empId: "EMP009", empEmail: "ian.somerhalder@example.com", projectId: "PRJ005" },
+  { empId: "EMP010", empEmail: "julia.roberts@example.com", projectId: "PRJ002" },
+  { empId: "EMP011", empEmail: "kevin.hart@example.com", projectId: "PRJ003" },
+  { empId: "EMP012", empEmail: "laura.croft@example.com", projectId: "PRJ004" },
+  { empId: "EMP013", empEmail: "michael.scott@example.com", projectId: "PRJ005" },
+];
 
 export const projects = [
   {
@@ -239,7 +253,6 @@ export const monthBreadown=
   { label: 'Social Security', amount: -200, type: 'negative' },
   { label: 'Health Insurance', amount: -200, type: 'negative' },
 ]
-
 
 export const attendance = [
   {

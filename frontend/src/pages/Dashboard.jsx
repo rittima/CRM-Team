@@ -1,12 +1,17 @@
 import { useState } from 'react';
 import DashCard from '../timer/DashCard';
 import Card from '../components/Card';
+import LocationStatus from '../components/LocationStatus';
 
 const Dashboard = ({ tasks, handleSaveTask, showTimerModal, onOpenTimer, onCloseTimer }) => {
   return (
     <div>
-      <div className="p-4 pl-7 text-gray-500 text-1xl font-bold">CRM Dashboard</div>
+      <div className='flex justify-between pt-5'>
+        <div className="p-4 pl-7 text-gray-500 text-1xl font-bold">CRM Dashboard</div>
+        <LocationStatus />
+      </div>
       <Card />
+      
       <DashCard
         tasks={tasks}
         showTimerModal={showTimerModal}

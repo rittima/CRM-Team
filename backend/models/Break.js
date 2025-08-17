@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const breakSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
@@ -7,4 +7,4 @@ const breakSchema = new mongoose.Schema({
   durationInSeconds: { type: Number },
 });
 
-module.exports = mongoose.model("Break", breakSchema);
+export default mongoose.model("Break", breakSchema);
