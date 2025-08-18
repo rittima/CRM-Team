@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useAuth } from '../context/AuthContext';
 import api from '../services/axios';
-// import '../Styles/TaskCard.scss';
 
 const TaskCard = ({ onClose, onSave, taskName, taskDesc, timeTaken }) => {
   const [title, setTitle] = useState(taskName || "");
