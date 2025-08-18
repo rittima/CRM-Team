@@ -19,10 +19,26 @@ const LocationTab = () => {
   const fetchEmployeeLocations = async () => {
     try {
       setLocationsLoading(true);
+      console.log('Fetching employee locations...');
       const response = await api.get("/location/all-employees");
-      if (response.data.success) setEmployeeLocations(response.data.employees);
+      console.log('Employee locations response:', response.data);
+      
+      if (response.data.success) {
+        setEmployeeLocations(response.data.employees);
+        console.log('Set employee locations:', response.data.employees);
+      } else {
+        console.error('Failed to fetch locations:', response.data.message);
+        alert("Failed to fetch employee locations: " + response.data.message);
+      }
     } catch (error) {
       console.error("Error fetching employee locations:", error);
+      if (error.response?.status === 403) {
+        alert("Access denied. You don't have permission to view employee locations.");
+      } else if (error.response?.status === 401) {
+        alert("Authentication required. Please log in again.");
+      } else {
+        alert("Failed to fetch employee locations: " + (error.response?.data?.message || error.message));
+      }
     } finally {
       setLocationsLoading(false);
     }
@@ -61,11 +77,18 @@ const LocationTab = () => {
   const fetchEmployeeLocationHistory = async (userId) => {
     try {
       setHistoryLoading(prev => ({ ...prev, [userId]: true }));
+      console.log('Fetching location history for user:', userId);
+      
       const response = await api.get(`/location/history?userId=${userId}&limit=10`);
+      console.log('Location history response:', response.data);
+      
       if (response.data.success) {
+        console.log('Location history data:', response.data.locations);
         setLocationHistoryData(prev => ({ ...prev, [userId]: response.data.locations }));
       } else {
+        console.log('Failed to fetch location history:', response.data.message);
         setLocationHistoryData(prev => ({ ...prev, [userId]: [] }));
+        alert(`No location history found for this employee: ${response.data.message}`);
       }
     } catch (error) {
       console.error("Error fetching location history:", error);
@@ -89,24 +112,62 @@ const LocationTab = () => {
   // Refresh all locations
   const refreshLocations = () => fetchEmployeeLocations();
 
-  // Clear all location history
-  const clearAllLocationHistory = async () => {
-    if (!window.confirm("Are you sure you want to clear all location history?")) return;
+  // Clear only inactive employee location data
+  const clearAllInactiveData = async () => {
+    // if (!window.confirm('Are you sure you want to clear all inactive employee location data? This action cannot be undone.')) {
+    //   return;
+    // }
+
     try {
-      setLocationsLoading(true);
-      const response = await api.delete("/location/clear-all");
-      if (response.status === 200) {
-        setEmployeeLocations([]);
+      // First, identify inactive employees locally
+      const activeEmployees = employeeLocations.filter(emp => {
+        if (!emp.currentLocation) return false;
+        const status = getLocationStatus(emp.currentLocation);
+        return status.status === 'active';
+      });
+
+      // Update the table immediately to show only active employees
+      setEmployeeLocations(activeEmployees);
+      
+      // Then call the backend to clean up the database
+      const response = await api.delete('/location/clear-inactive');
+      if (response.data.success) {
+        alert(`Successfully cleared ${response.data.deletedCount} inactive location records from ${response.data.clearedUsers} users.`);
+        // Clear any open history data for removed employees
         setLocationHistoryData({});
         setShowLocationHistory({});
-        alert("All location history cleared!");
-        fetchEmployeeLocations();
+      } else {
+        alert('Failed to clear inactive data: ' + response.data.message);
+        // If backend failed, refresh to get accurate data
+        await fetchEmployeeLocations();
       }
     } catch (error) {
-      console.error("Error clearing location history:", error);
-      alert("Failed to clear location history.");
-    } finally {
-      setLocationsLoading(false);
+      console.error('Error clearing inactive data:', error);
+      alert('Failed to clear inactive data: ' + (error.response?.data?.message || error.message));
+      // If there was an error, refresh to get accurate data
+      await fetchEmployeeLocations();
+    }
+  };
+
+  // Generate Google Maps link
+  const getGoogleMapsLink = (lat, lng) => {
+    return `https://www.google.com/maps?q=${lat},${lng}`;
+  };
+
+  // Get location status
+  const getLocationStatus = (currentLocation) => {
+    if (!currentLocation) return { status: 'inactive', color: 'bg-gray-500', text: 'No Location' };
+    
+    const lastUpdated = new Date(currentLocation.lastUpdated);
+    const now = new Date();
+    const diffInMinutes = (now - lastUpdated) / (1000 * 60);
+    
+    if (diffInMinutes <= 30) {
+      return { status: 'active', color: 'bg-green-500', text: 'Active' };
+    } else if (diffInMinutes <= 120) {
+      return { status: 'recent', color: 'bg-yellow-500', text: 'Recent' };
+    } else {
+      return { status: 'inactive', color: 'bg-red-500', text: 'Inactive' };
     }
   };
 
@@ -131,7 +192,11 @@ const LocationTab = () => {
 
   // Stats
   const totalEmployees = employeeLocations.length;
-  const activeLocations = employeeLocations.filter(emp => emp.currentLocation).length;
+  const activeLocations = employeeLocations.filter(emp => {
+    if (!emp.currentLocation) return false;
+    const status = getLocationStatus(emp.currentLocation);
+    return status.status === 'active';
+  }).length;
   const inactiveLocations = totalEmployees - activeLocations;
 
   return (
@@ -144,14 +209,14 @@ const LocationTab = () => {
           <button
             onClick={refreshLocations}
             disabled={locationsLoading}
-            className="px-4 py-2 rounded bg-blue-100 text-blue-800 font-medium hover:bg-blue-200 transition disabled:opacity-50"
+            className="px-3 py-2 rounded bg-blue-100 text-blue-800 font-medium hover:bg-blue-200 transition disabled:opacity-50 text-sm"
           >
             {locationsLoading ? "🔄 Refreshing..." : "🔄 Refresh"}
           </button>
           <button
-            onClick={clearAllLocationHistory}
+            onClick={clearAllInactiveData}
             disabled={locationsLoading}
-            className="px-4 py-2 rounded bg-gray-100 text-gray-800 font-medium hover:bg-gray-200 transition disabled:opacity-50"
+            className="px-3 py-2 rounded bg-red-100 text-red-800 font-medium hover:bg-red-200 transition disabled:opacity-50 text-sm"
           >
             🗑️ Clear All
           </button>
@@ -177,72 +242,145 @@ const LocationTab = () => {
         </div>
       </div>
 
-      {/* Employee Table */}
+      {/* Employee Locations Table */}
       {locationsLoading ? (
         <div className="loading-state flex flex-col items-center justify-center py-20 gap-4">
           <div className="w-14 h-14 border-4 border-blue-200 border-t-blue-500 rounded-full animate-spin"></div>
           <p className="text-gray-600 text-lg font-medium">Loading employee locations...</p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="employee-table-container">
           {getFilteredLocations().length > 0 ? (
-            <table className="w-full table-auto bg-white shadow-md rounded-lg overflow-hidden">
-              <thead className="bg-gray-100">
-                <tr>
-                  <th className="px-4 py-3 text-left text-gray-600 text-sm font-medium">Employee</th>
-                  <th className="px-4 py-3 text-left text-gray-600 text-sm font-medium">Email</th>
-                  <th className="px-4 py-3 text-left text-gray-600 text-sm font-medium">Employee ID</th>
-                  <th className="px-4 py-3 text-left text-gray-600 text-sm font-medium">Last Location</th>
-                  <th className="px-4 py-3 text-left text-gray-600 text-sm font-medium">Last Updated</th>
-                  <th className="px-4 py-3 text-left text-gray-600 text-sm font-medium">History</th>
-                </tr>
-              </thead>
-              <tbody>
-                {getFilteredLocations().map(emp => (
-                  <tr key={emp._id} className="hover:bg-gray-50 transition">
-                    <td className="px-4 py-3 font-medium text-gray-700">{emp.name}</td>
-                    <td className="px-4 py-3 text-gray-500">{emp.email}</td>
-                    <td className="px-4 py-3 text-gray-500">{emp.employeeId}</td>
-                    <td className="px-4 py-3 text-gray-700">
-                      {emp.currentLocation
-                        ? `${emp.currentLocation.latitude.toFixed(4)}, ${emp.currentLocation.longitude.toFixed(4)}`
-                        : "No location"}
-                    </td>
-                    <td className="px-4 py-3 text-gray-500">
-                      {emp.currentLocation
-                        ? new Date(emp.currentLocation.lastUpdated).toLocaleString()
-                        : "-"}
-                    </td>
-                    <td className="px-4 py-3">
-                      <button
-                        onClick={() => toggleLocationHistory(emp._id)}
-                        className="px-2 py-1 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition"
-                      >
-                        {showLocationHistory[emp._id] ? "Hide History" : "Show History"}
-                      </button>
-
-                      {showLocationHistory[emp._id] && (
-                        <div className="mt-2 text-sm text-gray-600">
-                          {historyLoading[emp._id] ? (
-                            <p>Loading history...</p>
-                          ) : locationHistoryData[emp._id]?.length > 0 ? (
-                            <ul className="space-y-1">
-                              {locationHistoryData[emp._id].map((loc, index) => (
-                                <li key={index}>
-                                  {new Date(loc.timestamp).toLocaleString()} - {loc.latitude.toFixed(4)}, {loc.longitude.toFixed(4)}
-                                </li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <p>No history available</p>
-                          )}
-                        </div>
-                      )}
-                    </td>
+            <div className="overflow-x-auto bg-white rounded-lg shadow">
+              <table className="min-w-full table-auto">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Employee
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Email
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Employee ID
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Last Location
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Last Updated
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Map
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      History
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {getFilteredLocations().map(emp => {
+                    const locationStatus = getLocationStatus(emp.currentLocation);
+                    return (
+                      <React.Fragment key={emp._id}>
+                        <tr className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="font-medium text-gray-900">{emp.name}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-500">{emp.email}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-mono text-gray-700">{emp.employeeId}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-white ${locationStatus.color}`}>
+                              {locationStatus.text}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-mono text-gray-700">
+                              {emp.currentLocation
+                                ? `${emp.currentLocation.latitude.toFixed(4)}, ${emp.currentLocation.longitude.toFixed(4)}`
+                                : "No location available"}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-700">
+                              {emp.currentLocation
+                                ? new Date(emp.currentLocation.lastUpdated).toLocaleString()
+                                : "-"}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {emp.currentLocation && (
+                              <a
+                                href={getGoogleMapsLink(emp.currentLocation.latitude, emp.currentLocation.longitude)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center w-8 h-8 text-white rounded-full hover:bg-blue-100 transition-colors"
+                                title="View on Map"
+                              >
+                                📍
+                              </a>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <button
+                              onClick={() => toggleLocationHistory(emp._id)}
+                              className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded hover:bg-gray-200 transition"
+                            >
+                              {showLocationHistory[emp._id] ? "Hide" : "Show"}
+                            </button>
+                          </td>
+                        </tr>
+                        {showLocationHistory[emp._id] && (
+                          <tr>
+                            <td colSpan="8" className="px-6 py-4 bg-gray-50">
+                              <div className="text-sm">
+                                {historyLoading[emp._id] ? (
+                                  <p className="text-center text-gray-500">Loading history...</p>
+                                ) : locationHistoryData[emp._id]?.length > 0 ? (
+                                  <div className="space-y-1 max-h-32 overflow-y-auto">
+                                    {locationHistoryData[emp._id].map((loc, index) => (
+                                      <div key={index} className="text-xs border-b border-gray-200 pb-1">
+                                        <div className="flex items-center justify-between">
+                                          <span className="font-medium text-gray-600">
+                                            {new Date(loc.timestamp).toLocaleString()}
+                                          </span>
+                                          <span className="text-gray-500 font-mono mx-2">
+                                            {loc.coordinates ? 
+                                              `${loc.coordinates.latitude?.toFixed(4) || 'N/A'}, ${loc.coordinates.longitude?.toFixed(4) || 'N/A'}` :
+                                              loc.latitude && loc.longitude ? 
+                                                `${loc.latitude.toFixed(4)}, ${loc.longitude.toFixed(4)}` : 
+                                                'No coordinates'
+                                            }
+                                          </span>
+                                          {loc.address && (
+                                            <span className="text-gray-400 flex-1 truncate">
+                                              {loc.address}
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <p className="text-center text-gray-500">No history available</p>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           ) : (
             <div className="no-data text-center py-16 text-gray-500">
               <p className="text-lg font-semibold">No employee location data found</p>

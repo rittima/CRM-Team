@@ -47,11 +47,11 @@ const Sidebar = () => {
             <li><NavLink to="/profile" className={linkClasses}><User2Icon size={18} /> Profile</NavLink></li>
             <li><NavLink to="/hr" className={linkClasses}><Users size={18} /> HR Records</NavLink></li>
             <li><NavLink to="/hrproject" className={linkClasses}><FolderCheck size={18} /> HR Project</NavLink></li>
-            <li><NavLink to="/expenses" className={linkClasses}><ReceiptText size={18} /> Expense</NavLink></li>
             <li><NavLink to="/projects" className={linkClasses}><FolderOpen size={18} /> Projects</NavLink></li>
+            <li><NavLink to="/timesheet" className={linkClasses}><CalendarCheck2 size={18} />Leave Management</NavLink></li>
+            <li><NavLink to="/expenses" className={linkClasses}><ReceiptText size={18} /> Expense</NavLink></li>
             <li><NavLink to="/workload" className={linkClasses}><Users2 size={18} /> Staff Workload</NavLink></li>
             <li><NavLink to="/payslip" className={linkClasses}><IndianRupeeIcon size={18} /> Payslips & Salary</NavLink></li>
-            <li><NavLink to="/timesheet" className={linkClasses}><CalendarCheck2 size={18} />Leave Management</NavLink></li>
             <li><NavLink to="/support" className={linkClasses}><BarChart size={18} /> Support</NavLink></li>
           </ul>
         </aside>

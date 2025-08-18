@@ -1,10 +1,37 @@
-import { useState } from "react";
-import { projects } from "../data";
+import { useState, useEffect } from "react";
 import { Eye, Search, View } from "lucide-react";
 import PrjModle from "../components/PrjModle";
+import api from "../services/axios";
 
 const Projects = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
+
+  // Fetch projects from backend
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        setLoading(true);
+        const response = await api.get("/projects");
+        if (response.data.success) {
+          setProjects(response.data.projects);
+        } else {
+          setError("Failed to load projects");
+        }
+      } catch (err) {
+        console.error("Error fetching projects:", err);
+        setError(err.response?.data?.message || "Failed to load projects");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
 
   const filteredProjects = projects.filter(
     (project) =>
@@ -13,8 +40,6 @@ const Projects = () => {
       project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       project.manager.toLowerCase().includes(searchTerm.toLowerCase())
   );
-  const [showModal, setShowModal] = useState(false)
-  const [selectedProject, setSelectedProject] = useState(null);
 
   const handleView = (project) => {
     setSelectedProject(project);
@@ -68,7 +93,25 @@ const Projects = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {filteredProjects.length > 0 ? (
+            {loading ? (
+              <tr>
+                <td
+                  colSpan="6"
+                  className="py-6 text-center text-gray-500 text-sm"
+                >
+                  Loading projects...
+                </td>
+              </tr>
+            ) : error ? (
+              <tr>
+                <td
+                  colSpan="6"
+                  className="py-6 text-center text-red-500 text-sm"
+                >
+                  {error}
+                </td>
+              </tr>
+            ) : filteredProjects.length > 0 ? (
               filteredProjects.map((project) => (
                 <tr
                   key={project.projectId}
@@ -99,7 +142,7 @@ const Projects = () => {
                           : "bg-gray-100 text-gray-800"
                       }`}
                     >
-                      {project.status}
+                      {project.status || "Not Set"}
                     </span>
                   </td>
                   <td className="py-3 px-6 text-sm">

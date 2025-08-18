@@ -65,6 +65,7 @@ export const loginUser = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
     
+    const token = signToken(user._id);
     const safe = { 
       _id: user._id, 
       employeeId: user.employeeId,
@@ -73,11 +74,30 @@ export const loginUser = async (req, res) => {
       role: user.role 
     };
     
-    return res.status(200).json({ token: signToken(user._id), ...safe });
+    // Set JWT token as HTTP-only cookie
+    const cookieOptions = {
+      expires: new Date(Date.now() + (process.env.JWT_COOKIE_EXPIRES_IN || 30) * 24 * 60 * 60 * 1000),
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax'
+    };
+    
+    res.cookie('token', token, cookieOptions);
+    
+    return res.status(200).json({ token, ...safe });
   } catch (err) {
     console.error("Login error:", err.message);
     return res.status(500).json({ message: "Server error" });
   }
+};
+
+// Logout user - clear cookie
+export const logoutUser = (req, res) => {
+  res.cookie('token', 'loggedout', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true
+  });
+  res.status(200).json({ message: "Logged out successfully" });
 };
 
 // Change user password

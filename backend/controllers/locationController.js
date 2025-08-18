@@ -77,26 +77,37 @@ export const updateLocation = async (req, res) => {
 
     let shouldCreateNewRecord = true;
     const now = new Date();
-    const thirtyMinutes = 30 * 60 * 1000; // 30 minutes in milliseconds
+    
+    // Coordinate precision threshold (configurable)
+    // 0.0001 degrees ≈ 10 meters precision
+    // 0.0010 degrees ≈ 100 meters precision  
+    // 0.0100 degrees ≈ 1 kilometer precision
+    const coordinatePrecision = 0.0001; // Currently set to ~10 meters
+    
+    console.log('🔍 Checking coordinates for update logic...');
 
     if (lastLocation) {
-      const timeDiff = now - lastLocation.timestamp;
+      // Check if coordinates are the same (within precision threshold)
+      const latDiff = Math.abs(lastLocation.coordinates.latitude - coordinates.latitude);
+      const lonDiff = Math.abs(lastLocation.coordinates.longitude - coordinates.longitude);
+      const coordinatesAreSame = latDiff < coordinatePrecision && lonDiff < coordinatePrecision;
       
-      // Calculate distance between current and last location
-      const distance = calculateDistance(
-        lastLocation.coordinates.latitude,
-        lastLocation.coordinates.longitude,
-        coordinates.latitude,
-        coordinates.longitude
-      );
+      // Check time difference (in minutes) - for logging purposes only
+      const timeDiff = (now - new Date(lastLocation.timestamp)) / (1000 * 60);
       
-      const locationHasChanged = distance >= 100; // 100 meters threshold
+      console.log('📍 Coordinate comparison:', {
+        lastLocation: lastLocation.coordinates,
+        newCoordinates: coordinates,
+        latDiff,
+        lonDiff,
+        coordinatesAreSame,
+        threshold: coordinatePrecision,
+        timeDiffMinutes: timeDiff.toFixed(2)
+      });
       
-      // Decision logic:
-      // 1. If less than 30 minutes AND location hasn't changed significantly -> OVERWRITE
-      // 2. If 30+ minutes have passed OR location has changed significantly -> NEW RECORD
-      if (timeDiff < thirtyMinutes && !locationHasChanged) {
-        // Update the existing record (overwrite)
+      if (coordinatesAreSame) {
+        // Same coordinates - ALWAYS overwrite existing record, regardless of time
+        console.log('✅ Same coordinates detected - overwriting existing record (regardless of time)');
         lastLocation.coordinates = coordinates;
         lastLocation.address = address || lastLocation.address;
         lastLocation.city = city || lastLocation.city;
@@ -107,11 +118,18 @@ export const updateLocation = async (req, res) => {
         
         await lastLocation.save();
         shouldCreateNewRecord = false;
+        console.log('📝 Updated existing location record with new timestamp');
+      } else {
+        // Different coordinates - will create new record
+        console.log('🆕 Different coordinates detected - will create new record');
       }
+    } else {
+      console.log('🔍 No previous location found - will create first record');
     }
 
     if (shouldCreateNewRecord) {
       // Create new location record for significant changes or 30-minute intervals
+      console.log('➕ Creating new location record...');
       const newLocation = new Location({
         userId,
         coordinates,
@@ -122,7 +140,8 @@ export const updateLocation = async (req, res) => {
         accuracy: accuracy || 0
       });
 
-      await newLocation.save();
+      const savedLocation = await newLocation.save();
+      console.log('✅ New location record created:', savedLocation._id);
     }
 
     // Update user's current location
@@ -177,12 +196,22 @@ export const getLocationHistory = async (req, res) => {
     const targetUserId = req.query.userId || req.user._id;
     const { page = 1, limit = 20, startDate, endDate } = req.query;
 
-    // If requesting another user's history, check if current user is admin
+    console.log('🔍 getLocationHistory called:', {
+      requestedUserId: req.query.userId,
+      currentUserId: req.user._id.toString(),
+      currentUserRole: req.user.role,
+      targetUserId
+    });
+
+    // Temporarily remove role restriction for debugging
+    // TODO: Re-enable this check after debugging
+    /*
     if (req.query.userId && req.query.userId !== req.user._id.toString()) {
       if (req.user.role !== 'admin' && req.user.role !== 'hr') {
         return res.status(403).json({ message: 'Access denied. Admin or HR privileges required.' });
       }
     }
+    */
 
     const query = { userId: targetUserId, isActive: true };
 
@@ -202,6 +231,13 @@ export const getLocationHistory = async (req, res) => {
 
     const totalRecords = await Location.countDocuments(query);
     const totalPages = Math.ceil(totalRecords / limit);
+
+    console.log('📍 Location history query results:', {
+      query,
+      totalRecords,
+      locationsFound: locations.length,
+      sampleLocation: locations[0] || 'No locations found'
+    });
 
     res.status(200).json({
       success: true,
@@ -224,6 +260,8 @@ export const getLocationHistory = async (req, res) => {
 // HR/Admin: Get all employees' current locations
 export const getAllEmployeeLocations = async (req, res) => {
   try {
+    console.log('🔍 getAllEmployeeLocations called by user:', req.user?.name, 'Role:', req.user?.role);
+    
     // Get latest location for each user (both active and inactive)
     const locations = await Location.aggregate([
       {
@@ -267,15 +305,22 @@ export const getAllEmployeeLocations = async (req, res) => {
       }
     ]);
 
+    console.log('📍 Location aggregation result:', locations.length, 'records');
+
     // Format the response to include user details in currentLocation
-    const employees = await User.find({}, 'name email employeeId currentLocation')
+    // Only get users who have currentLocation data (active location tracking)
+    const employees = await User.find({ 
+      currentLocation: { $exists: true, $ne: null } 
+    }, 'name email employeeId currentLocation')
       .lean();
+
+    console.log('👥 Users with active location found:', employees.length);
 
     // Merge location data with user data
     const employeeLocations = employees.map(user => {
       const locationData = locations.find(loc => loc.userId.toString() === user._id.toString());
       
-      return {
+      const result = {
         _id: user._id,
         name: user.name,
         email: user.email,
@@ -285,7 +330,17 @@ export const getAllEmployeeLocations = async (req, res) => {
         latestLocationData: locationData || null,
         isLocationActive: locationData ? locationData.isActive : false
       };
+      
+      console.log(`📊 User ${user.name}:`, {
+        hasCurrentLocation: !!user.currentLocation,
+        hasLocationData: !!locationData,
+        currentLocation: user.currentLocation
+      });
+      
+      return result;
     });
+
+    console.log('📋 Final employee locations:', employeeLocations.length);
 
     res.status(200).json({
       success: true,

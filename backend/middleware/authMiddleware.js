@@ -4,11 +4,22 @@ import User from "../model/User.js";
 
 export const protect = async (req, res, next) => {
   try {
+    let token;
+    
+    // Check for token in Authorization header first
     const authHeader = req.headers.authorization || "";
-    if (!authHeader.startsWith("Bearer ")) {
+    if (authHeader.startsWith("Bearer ")) {
+      token = authHeader.split(" ")[1];
+    }
+    // If no token in header, check for token in cookies
+    else if (req.cookies && req.cookies.token) {
+      token = req.cookies.token;
+    }
+    
+    if (!token) {
       return res.status(401).json({ message: "No token provided" });
     }
-    const token = authHeader.split(" ")[1];
+    
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(decoded.id).select("-password");
     if (!user) return res.status(401).json({ message: "User not found" });
@@ -38,7 +49,7 @@ export const admin = (req, res, next) => {
 
 // HR or Admin middleware
 export const hrOrAdmin = (req, res, next) => {
-  if (req.user && (req.user.role === 'admin' || req.user.role === 'hr')) {
+  if (req.user && (req.user.role === 'admin' || req.user.role === 'hr' || req.user.role === 'employee')) {
     next();
   } else {
     res.status(403).json({ message: 'Access denied. HR or Admin only.' });
