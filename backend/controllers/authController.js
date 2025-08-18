@@ -6,9 +6,9 @@ const signToken = (id) => jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: 
 
 export const registerUser = async (req, res) => {
   try {
-    const { employeeId, name, email } = req.body;
-    if (!employeeId || !name || !email) {
-      return res.status(400).json({ message: "Employee ID, name, and email are required" });
+    const { employeeId, name, email, role } = req.body;
+    if (!employeeId || !name || !email || !role) {
+      return res.status(400).json({ message: "Employee ID, name, email, and role are required" });
     }
 
     // Check if email already exists
@@ -24,16 +24,21 @@ export const registerUser = async (req, res) => {
     }
 
     // Generate a default password (employee can change it later)
-    // Using a combination of employeeId and a default suffix for initial password
     const defaultPassword = `${employeeId}@2025`;
+    
+    // ✅ Fix: use requested role, fallback to employee if invalid
+    const validRoles = ["admin", "employee"];
+    const finalRole = validRoles.includes(role) ? role : "employee";
+
 
     const user = await User.create({ 
       employeeId,
       name, 
       email, 
       password: defaultPassword, 
-      role: "employee" // Default role for all new signups
+      role: finalRole
     });
+
 
     const safe = { 
       _id: user._id, 

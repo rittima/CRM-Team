@@ -4,77 +4,80 @@ import { Link } from "react-router-dom";
 import api from "../services/axios";
 
 export default function Signup() {
-  const [form, setForm] = useState({ employeeId: "", name: "", email: "" });
+  const [form, setForm] = useState({ employeeId: "", name: "", email: "", role: "" });
   const [err, setErr] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
   const onChange = (e) => setForm(p => ({ ...p, [e.target.name]: e.target.value }));
-
   const onSubmit = async (e) => {
-    e.preventDefault();
-    setErr("");
-    setSuccess("");
-    setLoading(true);
+  e.preventDefault();
+  setErr("");
+  setSuccess("");
+  setLoading(true);
+  
+  try {
+    const response = await api.post('/auth/register', {
+      ...form, 
+    });
     
-    try {
-      const response = await api.post('/auth/register', form);
-      
-      if (response.status === 201) {
-        setSuccess({
-          message: "Employee registered successfully!",
-          email: form.email,
-          password: `${form.employeeId}@2025`,
-        });
-        setForm({ employeeId: "", name: "", email: "" });
-      }
-
-    } catch (error) {
-      setErr(error.response?.data?.message || "Registration failed");
-    } finally {
-      setLoading(false);
+    if (response.status === 201) {
+      setSuccess({
+        message: "Employee registered successfully!",
+        email: form.email,
+        password: `${form.employeeId}@2025`,
+        role: form.role, // include role in success message
+      });
+      console.log("email : " ,form.email,'password:' ,`${form.employeeId}@2025`,'role:', form.role);
+      setForm({ employeeId: "", name: "", email: "", role: "" });
     }
-  };
+
+  } catch (error) {
+    setErr(error.response?.data?.message || "Registration failed");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
-      <form
-        onSubmit={onSubmit}
-        className="w-full max-w-md border border-gray-200 bg-white p-6 shadow-lg"
-      >
-        {/* Header */}
-        <h2 className="mb-2 text-2xl text-center font-bold text-gray-800">Employee Registration</h2>
-        <p className="mb-4 text-sm text-gray-600">
-          Register new employees. A default password will be generated automatically.
-        </p>
+  <div className="flex items-center justify-center bg-gradient-to-t from-gray-50 to-gray-100 px-4 pt-20">
+    <form
+      onSubmit={onSubmit}
+      className="w-full max-w-md border border-gray-200 bg-white p-8 shadow-xl"
+    >
+      {/* Header */}
+      <h1 className="text-2xl text-center mb-4 font-bold text-gray-800">Employee Registration</h1>
+      <p className="mb-6 text-center text-sm text-gray-600">
+        Register new employees. A default password will be generated automatically.
+      </p>
 
-        {/* Error */}
-        {err && (
-          <div className="mb-2  border border-red-400 bg-red-50 px-3 py-2 text-sm text-red-600">
-            {err}
-          </div>
-        )}
+      {/* Error */}
+      {err && (
+        <div className="mb-4  border border-red-400 bg-red-50 px-4 py-2 text-sm text-red-600">
+          {err}
+        </div>
+      )}
 
-        {/* Success */}
-        {success && (
-          <div className="bg-green-100 text-green-700 p-3 rounded space-y-2">
-            <p className="font-semibold">{success.message}</p>
-            <p>Login Credentials:</p>
-            <p>• <strong>Email:</strong> {success.email}</p>
-            <p>• <strong>Password:</strong> {success.password}</p>
-            <p className="italic">Please save these credentials for login.</p>
-          </div>
-        )}
+      {/* Success */}
+      {success && (
+        <div className="mb-4  border border-green-400 bg-green-50 px-4 py-3 text-sm text-green-700 space-y-2">
+          <p className="font-semibold">{success.message}</p>
+          <p>Login Credentials:</p>
+          <p>• <strong>Email:</strong> {success.email}</p>
+          <p>• <strong>Password:</strong> {success.password}</p>
+          <p className="italic text-xs">Please save these credentials for login.</p>
+        </div>
+      )}
 
-
-        {/* Form Inputs */}
+      {/* Form Inputs */}
+      <div className="space-y-4">
         <input
           name="employeeId"
           placeholder="Employee ID"
           value={form.employeeId}
           onChange={onChange}
           required
-          className="mb-3 w-full  border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+          className="w-full  border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
         />
         <input
           name="name"
@@ -82,7 +85,7 @@ export default function Signup() {
           value={form.name}
           onChange={onChange}
           required
-          className="mb-3 w-full  border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+          className="w-full  border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
         />
         <input
           name="email"
@@ -91,31 +94,43 @@ export default function Signup() {
           value={form.email}
           onChange={onChange}
           required
-          className="mb-4 w-full  border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+          className="w-full  border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
         />
 
-        <select name="role" id="role" value={form.role} onChange={onChange} required className="mb-4 w-full border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200">
+        <select
+          name="role"
+          id="role"
+          value={form.role}
+          onChange={onChange}
+          required
+          className="w-full  border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
+        >
           <option value="">Select Role</option>
           <option value="employee">Employee</option>
-          <option value="manager">Manager</option>
+          <option value="admin">Human Resource - HR</option>
         </select>
+      </div>
 
-        {/* Button */}
-        <button
-          disabled={loading}
-          className="w-full  bg-blue-600 py-2 text-white font-semibold hover:bg-blue-700 transition disabled:opacity-50"
+      {/* Button */}
+      <button
+        disabled={loading}
+        className="mt-6 w-full  bg-gray-800 py-2.5 text-white font-semibold shadow hover:bg-blue-700 transition disabled:opacity-50"
+      >
+        {loading ? "Registering..." : "Register Employee"}
+      </button>
+
+      {/* Footer */}
+      <div className="mt-4 text-center text-sm text-gray-500">
+        Already have an account?{" "}
+        <Link
+          to="/login"
+          className="font-medium text-blue-600 hover:underline"
         >
-          {loading ? "Registering..." : "Register Employee"}
-        </button>
+          Login
+        </Link>
+      </div>
+    </form>
+  </div>
+);
 
-        {/* Footer */}
-        <div className="mt-3 text-sm text-gray-500">
-          Already have an account?{" "}
-          <Link to="/login" className="font-medium text-blue-600 hover:underline">
-            Login
-          </Link>
-        </div>
-      </form>
-    </div>
-  );
 }

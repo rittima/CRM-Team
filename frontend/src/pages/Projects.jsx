@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Eye, Search, View } from "lucide-react";
+import { Eye, Search, Users2, View } from "lucide-react";
 import PrjModle from "../components/PrjModle";
+import PrjTeamModle from "../components/PrjTeamModle";
 import api from "../services/axios";
 
 const Projects = () => {
@@ -9,7 +10,25 @@ const Projects = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [showTeamModal, setShowTeamModal] = useState(false);
+  const [teamMembers, setTeamMembers] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
+
+  const handleTeamView = async (projectId) => {
+    try {
+      const response = await api.get(`/projects/${projectId}/team`);
+      if (response.data.success) {
+        setTeamMembers(response.data.teamMembers);
+        setShowTeamModal(true);
+      } else {
+        setTeamMembers([]);
+        alert("No team members found for this project.");
+      }
+    } catch (err) {
+      console.error("Error fetching team members:", err);
+      alert("Failed to fetch team members");
+    }
+  };
 
   // Fetch projects from backend
   useEffect(() => {
@@ -45,6 +64,7 @@ const Projects = () => {
     setSelectedProject(project);
     setShowModal(true);
   };
+  
 
  return (
   <div className="bg-gray-50 p-6 min-h-screen">
@@ -89,6 +109,9 @@ const Projects = () => {
               </th>
               <th className="py-3 px-6 text-left text-sm font-semibold">
                 Action
+              </th>
+              <th className="py-3 px-6 text-left text-sm font-semibold">
+                Team Members
               </th>
             </tr>
           </thead>
@@ -153,7 +176,19 @@ const Projects = () => {
                     >
                       <Eye className="w-5 h-5" />
                     </button>
+                  </td>
 
+                  <td className="py-3 px-6 text-sm">
+                    <button
+                      onClick={() => handleTeamView(project.projectId)}
+                      className="flex items-center gap-2 bg-gray-100 text-gray-700 px-3 py-2 rounded-lg 
+                                shadow-sm hover:bg-gray-800 hover:text-white cursor-pointer 
+                                transition-all duration-200 ease-in-out transform hover:scale-105"
+                      title="View Project"
+                    >
+                      <Users2 className="w-5 h-5" />
+                      <span className="font-medium">Show</span>
+                    </button>
                   </td>
                 </tr>
               ))
@@ -170,6 +205,12 @@ const Projects = () => {
           </tbody>
         </table>
       </div>
+      {showTeamModal && (
+          <PrjTeamModle
+            teamMembers={teamMembers}
+            onClose={() => setShowTeamModal(false)}
+          />
+        )}
 
       {/* Modal */}
       {showModal && (

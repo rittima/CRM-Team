@@ -233,15 +233,15 @@ const LocationTab = () => {
 
       {/* Stats */}
       <div className="location-stats grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
-        <div className="stat-card bg-gray-50 shadow rounded-lg p-4 flex flex-col items-center">
+        <div className="stat-card bg-gray-50 shadow-md rounded-lg p-4 flex flex-col items-center">
           <h4 className="text-gray-500 text-sm font-medium">Total Employees</h4>
           <span className="text-2xl font-semibold">{totalEmployees}</span>
         </div>
-        <div className="stat-card bg-gray-50 shadow rounded-lg p-4 flex flex-col items-center">
+        <div className="stat-card bg-gray-50 shadow-md rounded-lg p-4 flex flex-col items-center">
           <h4 className="text-gray-500 text-sm font-medium">Active Locations</h4>
           <span className="text-2xl font-semibold text-green-600">{activeLocations}</span>
         </div>
-        <div className="stat-card bg-gray-50 shadow rounded-lg p-4 flex flex-col items-center">
+        <div className="stat-card bg-gray-50 shadow-md rounded-lg p-4 flex flex-col items-center">
           <h4 className="text-gray-500 text-sm font-medium">Inactive Locations</h4>
           <span className="text-2xl font-semibold text-red-600">{inactiveLocations}</span>
         </div>
