@@ -222,6 +222,7 @@ const Profile = () => {
               <label className="block text-sm font-medium text-gray-600 mb-1">
                 Domain/Department
               </label>
+              
               <select
                 name="domain"
                 value={profileData.domain}

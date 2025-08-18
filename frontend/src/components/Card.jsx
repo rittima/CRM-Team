@@ -51,7 +51,7 @@ const Card = () => {
               <span className="font-semibold text-blue-900">Status:</span>{" "}
               <span
                 className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  currentEmployee.status === "Active"
+                  currentEmployee.status === "Profile Completed"
                     ? "bg-green-100 text-green-700"
                     : "bg-red-100 text-red-700"
                 }`}

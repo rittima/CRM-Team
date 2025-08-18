@@ -51,18 +51,56 @@ const AddProject = ({ onClose, onSave }) => {
   };
 
   const handleSaveClick = async () => {
-    if (!formData.projectId || !formData.title || !formData.manager) {
-      setError("Project ID, Title and Manager are required.");
+    // Enhanced validation
+    if (!formData.projectId || !formData.title || !formData.manager || !formData.email) {
+      setError("Project ID, Title, Manager name, and Manager email are required.");
       return;
+    }
+
+    // Validate email format
+    const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError("Please enter a valid manager email address.");
+      return;
+    }
+
+    // Validate team members
+    if (formData.teamMembers.length > 4) {
+      setError("Maximum 4 team members are allowed.");
+      return;
+    }
+
+    // Validate team member emails
+    for (const member of formData.teamMembers) {
+      if (member.empId && !member.empEmail) {
+        setError("All team members must have both Employee ID and Email.");
+        return;
+      }
+      if (member.empEmail && !emailRegex.test(member.empEmail)) {
+        setError("Please enter valid email addresses for all team members.");
+        return;
+      }
     }
 
     setIsLoading(true);
     setError("");
 
+    // Send skills and tools as comma-separated strings, not arrays
+    const payload = {
+      ...formData,
+      skills: formData.Skill || "",
+      tools: formData.tool || ""
+    };
+    delete payload.Skill;
+    delete payload.tool;
+
     try {
-      const response = await api.post("/projects", formData);
+      const response = await api.post("/projects", payload);
       if (response.data.success) {
-        if (typeof onSave === "function") onSave(formData);
+        // Show success message
+        alert(`Project "${formData.title}" created successfully!`);
+        
+        if (typeof onSave === "function") onSave(response.data.project);
         setFormData({
           projectId: "",
           title: "",
@@ -77,9 +115,19 @@ const AddProject = ({ onClose, onSave }) => {
         onClose();
       }
     } catch (err) {
-      setError(
-        err.response?.data?.message || "Failed to save project. Please try again."
-      );
+      console.error("Error creating project:", err);
+      
+      // Handle different types of errors
+      if (err.response?.data?.errors) {
+        // Multiple validation errors
+        setError(err.response.data.errors.join(", "));
+      } else if (err.response?.data?.message) {
+        // Single error message from backend
+        setError(err.response.data.message);
+      } else {
+        // Generic error
+        setError("Failed to save project. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -138,7 +186,6 @@ const AddProject = ({ onClose, onSave }) => {
                 <option value="">Select Status</option>
                 <option value="Ongoing">Ongoing</option>
                 <option value="Completed">Completed</option>
-                <option value="Pending">Pending</option>
             </select>
             </div>
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import api from "../../services/axios";
 import LocationFilters from "./LocationFilters";
+import { RefreshCw, Trash2 } from "lucide-react";
 
 const LocationTab = () => {
   const [employeeLocations, setEmployeeLocations] = useState([]);
@@ -211,14 +212,18 @@ const LocationTab = () => {
             disabled={locationsLoading}
             className="px-3 py-2 rounded bg-blue-100 text-blue-800 font-medium hover:bg-blue-200 transition disabled:opacity-50 text-sm"
           >
-            {locationsLoading ? "🔄 Refreshing..." : "🔄 Refresh"}
+            {locationsLoading ? (
+              <div className="flex items-center gap-2"><RefreshCw className="w-4 h-4 animate-spin" />Refreshing...</div>
+            ) : (
+              <div className="flex items-center gap-2"><RefreshCw className="w-4 h-4" />Refresh</div>
+          )}
           </button>
           <button
             onClick={clearAllInactiveData}
             disabled={locationsLoading}
-            className="px-3 py-2 rounded bg-red-100 text-red-800 font-medium hover:bg-red-200 transition disabled:opacity-50 text-sm"
+            className="px-3 py-2 rounded bg-red-100 text-red-800 font-medium hover:bg-red-200 transition disabled:opacity-50 text-sm flex items-center gap-2"
           >
-            🗑️ Clear All
+            <Trash2 className="w-4 h-4" /> Clear All
           </button>
         </div>
       </div>

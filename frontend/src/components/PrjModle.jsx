@@ -56,10 +56,10 @@ const PrjModle = ({ project, onClose, isHrView = false }) => {
             <span className="font-semibold">Email:</span> {project.email}
           </p>
           <p className="text-gray-700">
-            <span className="font-semibold">Skills:</span> {project.Skill}
+            <span className="font-semibold">Skills:</span> {project.skills || project.Skill || ""}
           </p>
           <p className="text-gray-700">
-            <span className="font-semibold">Tools:</span> {project.tool}
+            <span className="font-semibold">Tools:</span> {project.tools || project.tool || ""}
           </p>
           <p className="text-gray-700">
             <span className="font-semibold">Status:</span> {project.status}

@@ -141,13 +141,13 @@ function Attendance({ onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-50">
-      <div className="relative w-[380px] rounded-2xl bg-white p-8 text-center shadow-xl animate-fadeIn">
+    <div className="fixed bg-black/30 backdrop-blur-sm inset-0 z-[9999] flex items-center justify-center">
+      <div className="relative w-[380px] bg-white p-8 text-center shadow-xl animate-fadeIn">
         
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute right-3 top-2 text-xl text-gray-500 transition hover:text-red-500"
+          className="absolute right-3 top-2 text-xl text-gray-500 transition cursor-pointer hover:text-red-500"
         >
           ✖
         </button>
