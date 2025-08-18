@@ -60,7 +60,7 @@ const EmployeeSearch = () => {
         <button
           type="submit"
           disabled={loading}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg shadow-md transition flex items-center gap-2"
+          className="bg-gray-800 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg shadow-md transition flex items-center gap-2"
         >
           {loading ? (
             <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>

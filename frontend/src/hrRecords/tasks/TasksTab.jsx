@@ -33,7 +33,7 @@ const TasksTab = () => {
       {selectedEmployee ? (
         <TasksTable tasks={tasks} loading={loading} />
       ) : (
-        <div className="flex justify-center items-center h-32 text-gray-500 text-lg font-medium border border-dashed border-gray-300 rounded-lg">
+        <div className="flex justify-center items-center h-32 text-gray-500 bg-gray-50 text-lg font-medium border border-dashed border-gray-300 rounded-lg">
           👤 Please select an employee
         </div>
       )}
