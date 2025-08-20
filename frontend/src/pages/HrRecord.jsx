@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import AttendanceTab from "../hrRecords/attendence/AttendanceTab";
 import { useAuth } from "../context/AuthContext";
-import { UserCheck, ClipboardList, CalendarCheck, MapPin, Users } from "lucide-react";
+import { UserCheck, ClipboardList, CalendarCheck, MapPin, Users, UserPlus2, UserSearchIcon } from "lucide-react";
 
 import TasksTab from "../hrRecords/tasks/TasksTab";
 import LeaveTab from "../hrRecords/LeaveTab";
 import LocationTab from "../hrRecords/locations/LocationTab";
 import EmployeeSearchTab from "../hrRecords/EmployeeSearchTab";
+import Signup from "./Signup";
 
 const HrRecord = () => {
   const { user } = useAuth();
@@ -18,7 +19,8 @@ const HrRecord = () => {
     { id: "tasks", label: "Tasks Manager", icon: <ClipboardList className="w-4 h-4 mr-2" /> },
     { id: "leaves", label: "Leaves Management", icon: <CalendarCheck className="w-4 h-4 mr-2" /> },
     { id: "locations", label: "Locations Access", icon: <MapPin className="w-4 h-4 mr-2" /> },
-    { id: "employees", label: "Search Employees", icon: <Users className="w-4 h-4 mr-2" /> },
+    { id: "employees", label: "Search Employees", icon: <UserSearchIcon className="w-4 h-4 mr-2" /> },
+    { id: "register", label: "Register Employee", icon: <UserPlus2 className="w-4 h-4 mr-2" /> },
   ];
 
   return (
@@ -57,6 +59,7 @@ const HrRecord = () => {
         {activeTab === "leaves" && <LeaveTab />}
         {activeTab === "locations" && <LocationTab />}
         {activeTab === "employees" && <EmployeeSearchTab />}
+        {activeTab === "register" && <Signup />}
       </div>
     </div>
   );

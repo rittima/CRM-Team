@@ -40,7 +40,7 @@ export default function Signup() {
 };
 
   return (
-  <div className="flex items-center justify-center bg-gradient-to-t from-gray-50 to-gray-100 px-4 pt-20">
+  <div className="flex items-center justify-center bg-gradient-to-t from-gray-50 to-gray-100 px-4 pt-2">
     <form
       onSubmit={onSubmit}
       className="w-full max-w-md border border-gray-200 bg-white p-8 shadow-xl"
@@ -120,7 +120,7 @@ export default function Signup() {
       </button>
 
       {/* Footer */}
-      <div className="mt-4 text-center text-sm text-gray-500">
+      {/* <div className="mt-4 text-center text-sm text-gray-500">
         Already have an account?{" "}
         <Link
           to="/login"
@@ -128,7 +128,7 @@ export default function Signup() {
         >
           Login
         </Link>
-      </div>
+      </div> */}
     </form>
   </div>
 );

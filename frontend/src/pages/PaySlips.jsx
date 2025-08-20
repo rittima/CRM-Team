@@ -3,24 +3,30 @@ import { useState } from "react";
 import { Calendar,  Eye, Receipt, Download, ReceiptIndianRupee } from "lucide-react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faIndianRupee } from "@fortawesome/free-solid-svg-icons";
+import axios from "axios";
 
 const PaySlips = () => {
   const [selectedYear, setSelectedYear] = useState("2024");
 
+//   const fetchSalary = async (employeeId, month) => {
+//   const res = await axios.get(`http://localhost:5000/api/salary/${employeeId}/${month}`);
+//   return res.data;
+// };
+
+// // Usage in React Component
+// useEffect(() => {
+//   fetchSalary("EMP123", "August-2025").then(data => {
+//     setMonthBreakdown(data.monthBreakdown);
+//     setSalaryBreakdown({ netSalary: data.netSalary });
+//   });
+// }, []);
+
+
   return (
-    <div className="p-5 space-y-8  pl-7">
+    <div className="p-5 bg-white space-y-8  pl-7">
       {/* Header */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <h1 className="text-gray-500 text-1xl font-bold mb-4 uppercase">Payslips & Salary</h1>
-        <select
-          className="w-36 px-3 py-2 text-sm bg-white shadow-sm border border-gray-100 cursor-pointer"
-          value={selectedYear}
-          onChange={(e) => setSelectedYear(e.target.value)}
-        >
-          <option value="2024">2024</option>
-          <option value="2023">2023</option>
-          <option value="2022">2022</option>
-        </select>
       </div>
 
       {/* Salary Overview */}

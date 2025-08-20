@@ -15,7 +15,7 @@ const AddProject = ({ onClose, onSave }) => {
     email: "",
     Skill: "",
     tool: "",
-    status: "",
+    status: "Ongoing",
     teamMembers: [],
   });
 
@@ -109,7 +109,7 @@ const AddProject = ({ onClose, onSave }) => {
           email: "",
           Skill: "",
           tool: "",
-          status: "",
+          status: "Ongoing",
           teamMembers: [],
         });
         onClose();
@@ -175,18 +175,7 @@ const AddProject = ({ onClose, onSave }) => {
                 </div>
             ))}
 
-            {/* Status */}
-            <select
-                name="status"
-                value={formData.status}
-                onChange={handleChange}
-                disabled={isLoading}
-                className="border border-gray-300 rounded-lg px-3 py-2.5 shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition col-span-2 bg-gray-50 hover:bg-white"
-            >
-                <option value="">Select Status</option>
-                <option value="Ongoing">Ongoing</option>
-                <option value="Completed">Completed</option>
-            </select>
+            {/* Status is always Ongoing on creation, no select shown */}
             </div>
 
             {/* Description */}

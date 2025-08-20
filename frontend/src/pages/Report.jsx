@@ -1,13 +1,27 @@
 import { faQuestionCircle } from '@fortawesome/free-regular-svg-icons';
 import { faBug } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { faqs } from '../data'; 
 import { HelpCircle, HelpingHand } from 'lucide-react';
+import RaiseTicket from '../components/RiseTicket';
+import HelpSupport from '../components/HelpSupport';
 
 const Report = () => {
   const [openIndex, setOpenIndex] = useState(null);
+  const [isTicketModalOpen, setIsTicketModalOpen] = useState(false); // separate
+  const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
+
+  const handleTicketSubmit = (ticketData) => {
+    console.log("Ticket Created:", ticketData);
+    // Here you can call API: axios.post("/api/tickets", ticketData)
+  };
+
+  const handleSupportSubmit = (supportData) => {
+    console.log("Support Request Created:", supportData);
+    // Here you can call API: axios.post("/api/support", supportData)
+  };
 
   const toggleFAQ = (index) => {
     setOpenIndex(index === openIndex ? null : index);
@@ -32,13 +46,20 @@ const Report = () => {
               Encountered a bug or issue? Submit a detailed report so our team can assist you.
             </p>
           </div>
-          <Link
-            to="/raise-ticket"
+          <button
+             onClick={() => setIsTicketModalOpen(true)}
             className="text-center bg-white text-gray-900 border-2 border-black font-semibold py-2 rounded hover:bg-blue-700 hover:text-white transition"
           >
             Visit
-          </Link>
+          </button>
         </div>
+
+        {/* Raise Ticket Modal */}
+        <RaiseTicket
+          isOpen={isTicketModalOpen}
+          onClose={() => setIsTicketModalOpen(false)}
+          onSubmit={handleTicketSubmit}
+        />
 
         {/* Help & Support */}
         <div className="bg-gray-900 text-white rounded-lg shadow-lg p-8 flex flex-col justify-between">
@@ -51,14 +72,20 @@ const Report = () => {
               Need assistance? Access helpful documentation and get answers to common questions.
             </p>
           </div>
-          <Link
-            to="/support"
+          <button
+            onClick={() => setIsSupportModalOpen(true)}
             className="text-center bg-white text-gray-900 border-2 border-black font-semibold py-2 rounded hover:bg-blue-700 hover:text-white transition"
           >
             Visit
-          </Link>
+          </button>
         </div>
       </div>
+      {/* Help & Support Modal */}
+        <HelpSupport
+          isOpen={isSupportModalOpen}
+          onClose={() => setIsSupportModalOpen(false)}
+          onSubmit={handleSupportSubmit}
+        />
 
       {/* FAQ / Q&A Section */}
       <div className="max-w-4xl mx-auto mt-16">

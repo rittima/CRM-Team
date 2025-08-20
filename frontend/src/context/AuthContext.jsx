@@ -15,9 +15,11 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
     const load = async () => {
       const token = localStorage.getItem("token");
-
+      // console.log(token);
+      
       if (!token) {
-        setUser(null);
+        setUser(null) || setUser(undefined);
+
         setBootLoading(false);
         return;
       }
@@ -25,6 +27,8 @@ export const AuthProvider = ({ children }) => {
       try {
         const res = await api.get("/auth/me");
         setUser(res.data);
+        console.log("User data loaded:", res.data);
+
         await checkAttendanceAndStartTracking(res.data._id);
       } catch (e) {
         localStorage.removeItem("token");

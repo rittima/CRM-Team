@@ -201,22 +201,33 @@ export const getProjectById = async (req, res) => {
 export const updateProject = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log('✏️ Updating project:', id);
+    console.log('✏️ Update request received:', { id, body: req.body });
 
-    const project = await Project.findByIdAndUpdate(
-      id,
+    // Try updating by projectId first
+    let project = await Project.findOneAndUpdate(
+      { projectId: id },
       { ...req.body, lastUpdatedBy: req.user._id },
       { new: true }
     );
 
+    // If not found, try updating by _id
     if (!project) {
+      project = await Project.findByIdAndUpdate(
+        id,
+        { ...req.body, lastUpdatedBy: req.user._id },
+        { new: true }
+      );
+    }
+
+    if (!project) {
+      console.error('❌ Project not found for update:', id);
       return res.status(404).json({
         success: false,
         message: 'Project not found.'
       });
     }
 
-    console.log('✅ Project updated successfully:', project.projectId);
+    console.log('✅ Project updated successfully:', project.projectId || project._id);
 
     res.status(200).json({
       success: true,
@@ -227,7 +238,8 @@ export const updateProject = async (req, res) => {
     console.error('❌ Error updating project:', error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error while updating project.'
+      message: 'Internal server error while updating project.',
+      error: error.message
     });
   }
 };

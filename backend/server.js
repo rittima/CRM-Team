@@ -14,6 +14,7 @@ import leaveRoutes from "./routes/leaveRoutes.js";
 import locationRoutes from "./routes/locationRoutes.js";
 import projectRoutes from "./routes/projectRoutes.js";
 import cors from "cors";
+import hrProjectRoutes from './routes/hrProjectRoutes.js';
 
 
 dotenv.config();
@@ -37,6 +38,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/leaves', leaveRoutes);
 app.use('/api/location', locationRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/hr-projects', hrProjectRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

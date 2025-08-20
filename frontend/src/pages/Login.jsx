@@ -190,7 +190,7 @@ export default function Login() {
 
         {/* Footer */}
         <div className="mt-4 text-center text-sm text-gray-600">
-          <div>
+          {/* <div>
             <p>
               Don’t have an account?{" "}
               <Link
@@ -200,7 +200,7 @@ export default function Login() {
                 Create account
               </Link>
             </p>
-          </div>
+          </div> */}
           <p className="mt-2">
             <button
               type="button"

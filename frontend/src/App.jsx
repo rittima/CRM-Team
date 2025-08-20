@@ -18,6 +18,7 @@ import Signup from './pages/Signup';
 import Profile from './pages/Profile';
 import LeaveManagement from './pages/LeaveManagement';
 import HrProject from './hrRecords/HrProject';
+import LoginPage from './pages/Login';
 
 function App() {
   const [tasks, setTasks] = useState([]);
