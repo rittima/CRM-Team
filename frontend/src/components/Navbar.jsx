@@ -12,7 +12,7 @@ const Navbar = ({ onOpenTimer }) => {
   const [showTimerModal, setShowTimerModal] = useState(false);
 
   return (
-    <nav className="w-full bg-white shadow-md border-b border-gray-200">
+    <nav className="w-full bg-white shadow-md border-b border-gray-200 p-2 shadow-lg">
       <div className="max-w-8xl mx-auto px-6 py-3 flex items-center justify-between">
         
         {/* Brand */}
@@ -51,9 +51,7 @@ const Navbar = ({ onOpenTimer }) => {
             </button>
           </div>
         ) : (
-          <span className="text-sm text-gray-500 italic">
-            You are not signed in
-          </span>
+          <span></span>
         )}
       </div>
       {/* Attendance Fullscreen */}

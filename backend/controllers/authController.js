@@ -39,7 +39,6 @@ export const registerUser = async (req, res) => {
       role: finalRole
     });
 
-
     const safe = { 
       _id: user._id, 
       employeeId: user.employeeId,

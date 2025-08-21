@@ -9,16 +9,16 @@ import NotFound from './pages/NotFound';
 import Projects from './pages/Projects';
 import Report from './pages/Report';
 import HrRecord from './pages/HrRecord';
-import TimesheetsAndLeaves from './pages/TimesheetsAndLeaves';
 import StaffWorkload from './pages/StaffWorkload';
 import Expenses from './pages/Expenses';
-import PaySlips from './pages/PaySlips';
 import { useState } from 'react';
 import Signup from './pages/Signup';
 import Profile from './pages/Profile';
 import LeaveManagement from './pages/LeaveManagement';
 import HrProject from './hrRecords/HrProject';
-import LoginPage from './pages/Login';
+import Salary from './hrRecords/Salary';
+import PaySlips from './pages/PaySlips';
+
 
 function App() {
   const [tasks, setTasks] = useState([]);
@@ -72,7 +72,8 @@ function App() {
               <Route path='/timesheet' element={<ProtectedRoute><LeaveManagement/> </ProtectedRoute>} />
               <Route path='/workload' element={<ProtectedRoute><StaffWorkload/> </ProtectedRoute>} />
               <Route path='/expenses' element={<ProtectedRoute><Expenses/> </ProtectedRoute>} />
-              <Route path='/payslip' element={<ProtectedRoute><PaySlips/> </ProtectedRoute>} />              
+              <Route path='/payslip' element={<ProtectedRoute><PaySlips /> </ProtectedRoute>} />
+              <Route path='/salary' element={<ProtectedRoute><Salary/> </ProtectedRoute>} />
             </Routes>
           </main>
         </div>

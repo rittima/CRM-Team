@@ -190,27 +190,18 @@ export default function Login() {
 
         {/* Footer */}
         <div className="mt-4 text-center text-sm text-gray-600">
-          {/* <div>
-            <p>
-              Don’t have an account?{" "}
-              <Link
-                to="/signup"
-                className="text-blue-600 font-medium hover:underline"
-              >
-                Create account
-              </Link>
-            </p>
-          </div> */}
           <p className="mt-2">
+            Need to change your password?{' '}
             <button
               type="button"
               onClick={() => setShowChangePassword(true)}
               className="text-blue-600 cursor-pointer hover:underline font-medium"
             >
-              Change Password
+              Reset Password
             </button>
           </p>
         </div>
+
       </div>
 
       {/* Password Change Modal */}

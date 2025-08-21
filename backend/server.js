@@ -15,7 +15,7 @@ import locationRoutes from "./routes/locationRoutes.js";
 import projectRoutes from "./routes/projectRoutes.js";
 import cors from "cors";
 import hrProjectRoutes from './routes/hrProjectRoutes.js';
-
+import salaryRoutes from './routes/salaryRoutes.js';
 
 dotenv.config();
 connectDB();
@@ -38,6 +38,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/leaves', leaveRoutes);
 app.use('/api/location', locationRoutes);
 app.use('/api/projects', projectRoutes);
+app.use("/api/salary", salaryRoutes);
 app.use('/api/hr-projects', hrProjectRoutes);
 
 const PORT = process.env.PORT || 5000;

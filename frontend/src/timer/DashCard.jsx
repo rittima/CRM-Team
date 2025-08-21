@@ -16,18 +16,6 @@ const DashCard = ({ tasks, onSaveTask, showTimerModal, onOpenTimer, onCloseTimer
             </div>
             <h3 className="text-2xl font-bold text-gray-800">Assigned Tasks</h3>
           </div>
-
-          <span
-            className={`px-4 py-1.5 text-sm font-medium rounded-full shadow-sm ${
-              user?.status === "Completed"
-                ? "bg-green-100 text-green-700"
-                : user?.status === "In Progress"
-                ? "bg-yellow-100 text-yellow-700"
-                : "bg-red-100 text-red-700"
-            }`}
-          >
-            {user?.status || "Inactive"}
-          </span>
         </div>
 
         {/* Project Info */}

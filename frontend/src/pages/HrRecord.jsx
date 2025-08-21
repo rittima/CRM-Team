@@ -53,7 +53,7 @@ const HrRecord = () => {
       </div>
 
       {/* Tab Content */}
-      <div className="bg-white rounded-2xl shadow p-6 border border-gray-100">
+      <div className="bg-white  shadow p-6 border border-gray-100">
         {activeTab === "attendance" && <AttendanceTab />}
         {activeTab === "tasks" && <TasksTab />}
         {activeTab === "leaves" && <LeaveTab />}

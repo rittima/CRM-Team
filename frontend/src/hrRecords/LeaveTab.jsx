@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import api from "../services/axios";
-import { Check, X } from "lucide-react";
+import { Check, CheckCircle, X, XCircle } from "lucide-react";
 
 const LeaveTab = () => {
   // Leave management state
@@ -166,7 +166,7 @@ const LeaveTab = () => {
     const formatDate = (date) => new Date(date).toLocaleDateString();
 
     return (
-    <table className="attendance-table w-full text-left border-collapse">
+    <table className="attendance-table w-full  text-left border-collapse">
       <thead>
         <tr className="bg-gray-100">
           <th className="px-4 py-2 text-gray-600 text-sm font-medium">Employee</th>
@@ -177,7 +177,7 @@ const LeaveTab = () => {
           <th className="px-4 py-2 text-gray-600 text-sm font-medium">Reason</th>
           <th className="px-4 py-2 text-gray-600 text-sm font-medium">Status</th>
           <th className="px-4 py-2 text-gray-600 text-sm font-medium">Applied Date</th>
-          <th className="px-4 py-2 text-gray-600 text-sm font-medium">Actions</th>
+          <th className="px-7 py-2 text-gray-600 text-sm font-medium">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -211,20 +211,24 @@ const LeaveTab = () => {
               </span>
             </td>
             <td className="px-4 py-3 text-gray-400 text-sm">{formatDate(leave.appliedAt)}</td>
-            <td className="px-4 py-3 space-x-2">
+            <td className="px-4 py-3 flex space-x-4">
               {leave.status === 'Pending' ? (
                 <>
                   <button
-                    className="flex items-center gap-1 px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition"
-                    onClick={() => handleLeaveStatusUpdate(leave._id, 'Approved')}
+                    onClick={() => handleLeaveStatusUpdate(leave._id, "Approved")}
+                    // className="flex items-center justify-center w-8 h-8 bg-green-500 text-white hover:bg-green-600 transition rounded-full"
+                    className=" flex items-center justify-center text-green-600 hover:scale-110 transition hover:bg-green-200 rounded-full w-8 h-8 cursor-pointer"
+                    title="Approve"
                   >
-                    <Check size={16} /> Approve
+                    <CheckCircle className="w-5 h-5" />
                   </button>
+
                   <button
-                    className="flex items-center gap-1 px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
-                    onClick={() => handleLeaveStatusUpdate(leave._id, 'Rejected')}
+                    onClick={() => handleLeaveStatusUpdate(leave._id, "Rejected")}
+                    className=" flex items-center justify-center text-red-600 hover:scale-110 transition hover:bg-red-200 rounded-full w-8 h-8 cursor-pointer"
+                    title="Reject"
                   >
-                    <X size={16} /> Reject
+                    <XCircle className="w-5 h-5" />
                   </button>
                 </>
               ) : (

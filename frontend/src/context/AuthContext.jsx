@@ -1,4 +1,3 @@
-// frontend/src/context/AuthContext.jsx
 import React, { createContext, useContext, useEffect, useState } from "react";
 import api from "../services/axios";
 import { useLocationTracker } from "../hooks/useLocationTracker";
@@ -27,7 +26,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const res = await api.get("/auth/me");
         setUser(res.data);
-        console.log("User data loaded:", res.data);
+        // console.log("User data loaded:", res.data.userId);
 
         await checkAttendanceAndStartTracking(res.data._id);
       } catch (e) {
@@ -102,4 +101,3 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
-
