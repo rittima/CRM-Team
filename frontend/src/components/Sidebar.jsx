@@ -25,7 +25,7 @@ const Sidebar = () => {
     { to: "/hr", label: "HR Records", icon: Users },
     { to: "/hrproject", label: "HR Project", icon: FolderCheck },
     { to: "/salary", label: "Salary", icon: IndianRupeeIcon },
-    { to: "/expenses", label: "Expense", icon: ReceiptText },
+    // { to: "/expenses", label: "Expense", icon: ReceiptText },
     { to: "/workload", label: "Staff Workload", icon: Users2 },
     { to: "/support", label: "Support", icon: BarChart },
   ];
