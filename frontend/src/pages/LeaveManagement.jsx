@@ -306,177 +306,219 @@ const LeaveManagement = () => {
 
 
   return (
-    <div className="page-container">
-      <h2 className="page-title">Leave Management</h2>
-      
-      {/* Show loading state or actual data */}
-      {statsLoading ? (
-        <div className="stats-loading">
-          <div className="loading-message">Loading leave statistics...</div>
+  <div className="page-container p-6 font-sans">
+    {/* Title */}
+    <h2 className="text-2xl font-bold text-gray-800 mb-6">Leave Management</h2>
+
+    {/* Leave Stats */}
+    {statsLoading ? (
+      <div className="flex justify-center items-center py-8">
+        <div className="animate-pulse text-gray-500 text-lg">
+          Loading leave statistics...
+        </div>
+      </div>
+    ) : (
+      <LeaveCard
+        taken={leaveStats.taken}
+        pending={leaveStats.pending}
+        left={leaveStats.remaining}
+        monthlyAllocation={leaveStats.monthlyAllocation}
+      />
+    )}
+
+    {/* Leave Requests Section */}
+    <div className="bg-white rounded-2xl shadow-lg mt-8 p-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center mb-6 gap-3">
+        <h3 className="text-xl font-semibold text-gray-800">
+          My Leave Requests
+        </h3>
+        <button
+          onClick={() => setShowLeaveModal(true)}
+          disabled={statsLoading || leaveStats.remaining <= 0}
+          className={`px-5 py-2 rounded-lg text-white font-medium shadow transition-all ${
+            statsLoading || leaveStats.remaining <= 0
+              ? "bg-gray-400 cursor-not-allowed opacity-70"
+              : "bg-emerald-500 hover:bg-emerald-600"
+          }`}
+          title={
+            statsLoading
+              ? "Loading..."
+              : leaveStats.remaining <= 0
+              ? "No leaves available this month"
+              : ""
+          }
+        >
+          + Request Leave
+        </button>
+      </div>
+
+      {/* Table */}
+      {loading ? (
+        <div className="text-center py-8 text-gray-500 text-lg">
+          Loading...
         </div>
       ) : (
-        <LeaveCard 
-          taken={leaveStats.taken} 
-          pending={leaveStats.pending} 
-          left={leaveStats.remaining}
-          monthlyAllocation={leaveStats.monthlyAllocation}
-        />
-      )}
-
-      {/* Leave Section */}
-      <div className="p-6 font-sans">
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          {/* Card Header */}
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-semibold text-gray-800">My Leave Requests</h3>
-            <button
-              onClick={() => setShowLeaveModal(true)}
-              disabled={statsLoading || leaveStats.remaining <= 0}
-              className={`px-4 py-2 rounded-md text-white font-medium transition ${
-                statsLoading || leaveStats.remaining <= 0
-                  ? "bg-gray-400 cursor-not-allowed opacity-70"
-                  : "bg-emerald-500 hover:bg-emerald-600"
-              }`}
-              title={
-                statsLoading
-                  ? "Loading..."
-                  : leaveStats.remaining <= 0
-                  ? "No leaves available this month"
-                  : ""
-              }
-            >
-              + Request Leave
-            </button>
-          </div>
-
-          {/* Table */}
-          {loading ? (
-            <div className="text-center py-6 text-gray-500">Loading...</div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Start Date</th>
-                    <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">End Date</th>
-                    <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Leave Type</th>
-                    <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Working Days</th>
-                    <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Reason</th>
-                    <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Status</th>
-                    <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">Applied Date</th>
+        <div className="overflow-x-auto bg-gray-200 border border-gray-200 pb-2">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 border-b">
+              <tr>
+                {[
+                  "Start Date",
+                  "End Date",
+                  "Leave Type",
+                  "Working Days",
+                  "Reason",
+                  "Status",
+                  "Applied Date",
+                ].map((header) => (
+                  <th
+                    key={header}
+                    className="px-4 py-3 text-left font-semibold text-gray-700"
+                  >
+                    {header}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="bg-white">
+              {leaves.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan="7"
+                    className="text-center py-8 text-gray-500 text-base"
+                  >
+                    No leave requests found
+                  </td>
+                </tr>
+              ) : (
+                leaves.map((leave, idx) => (
+                  <tr
+                    key={leave._id || idx}
+                    className=" shadow-md hover:bg-gray-50 transition rounded-lg"
+                  >
+                    <td className="px-4 py-3">{formatDate(leave.startDate)}</td>
+                    <td className="px-4 py-3">{formatDate(leave.endDate)}</td>
+                    <td className="px-4 py-3">{leave.leaveType}</td>
+                    <td className="px-4 py-3">{leave.totalDays}</td>
+                    <td className="px-4 py-3">{leave.reason || "N/A"}</td>
+                    <td
+                      className={`px-4 py-3 font-semibold ${
+                        leave.status === "Approved"
+                          ? "text-green-600"
+                          : leave.status === "Pending"
+                          ? "text-yellow-600"
+                          : "text-red-600"
+                      }`}
+                    >
+                      {leave.status}
+                    </td>
+                    <td className="px-4 py-3">{formatDate(leave.appliedAt)}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {leaves.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan="7"
-                        className="text-center py-6 text-gray-500"
-                      >
-                        No leave requests found
-                      </td>
-                    </tr>
-                  ) : (
-                    leaves.map((leave, idx) => (
-                      <tr key={leave._id || idx} className="border-b">
-                        <td className="px-4 py-2 text-sm">{formatDate(leave.startDate)}</td>
-                        <td className="px-4 py-2 text-sm">{formatDate(leave.endDate)}</td>
-                        <td className="px-4 py-2 text-sm">{leave.leaveType}</td>
-                        <td className="px-4 py-2 text-sm">{leave.totalDays}</td>
-                        <td className="px-4 py-2 text-sm">{leave.reason || "N/A"}</td>
-                        <td
-                          className={`px-4 py-2 text-sm font-semibold ${
-                            leave.status === "Approved"
-                              ? "text-green-600"
-                              : leave.status === "Pending"
-                              ? "text-yellow-500"
-                              : "text-red-500"
-                          }`}
-                        >
-                          {leave.status}
-                        </td>
-                        <td className="px-4 py-2 text-sm">{formatDate(leave.appliedAt)}</td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+
+    {/* Modal */}
+    {showLeaveModal && (
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">
+        <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-lg animate-fadeIn">
+          <h3 className="text-xl font-semibold text-center text-gray-800 mb-4">
+            Request Leave
+          </h3>
+          <hr className="border-gray-200 mb-4" />
+
+          {/* Start Date */}
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Start Date:
+          </label>
+          <input
+            type="date"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            value={newLeave.startDate}
+            onChange={(e) => handleDateChange("startDate", e.target.value)}
+            min={getMinAllowedDate()}
+          />
+
+          {/* End Date */}
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            End Date:
+          </label>
+          <input
+            type="date"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            value={newLeave.endDate}
+            onChange={(e) => handleDateChange("endDate", e.target.value)}
+            min={newLeave.startDate || getMinAllowedDate()}
+          />
+
+          {/* Working Days Info */}
+          {newLeave.startDate && newLeave.endDate && (
+            <div className="bg-blue-50 border border-blue-200 text-blue-800 text-sm rounded-md p-3 mb-4">
+              Working days:{" "}
+              <span className="font-semibold">
+                {calculateWorkingDays(newLeave.startDate, newLeave.endDate)}
+              </span>{" "}
+              {calculateWorkingDays(newLeave.startDate, newLeave.endDate) === 1
+                ? "day"
+                : "days"}{" "}
+              <span className="text-gray-500 font-normal">(weekends excluded)</span>
             </div>
           )}
-        </div>
 
-        {/* Modal */}
-        {showLeaveModal && (
-          <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">
-            <div className="bg-white shadow-lg p-6  w-full max-w-md">
-              <h3 className="text-xl font-semibold text-center text-gray-800 mb-4">Request Leave</h3>
-                <hr className="border-gray-300 mb-4" />
-              <label className="block font-medium text-gray-700 mb-1">Start Date:</label>
-              <input
-                type="date"
-                className="w-full border border-gray-300 rounded-md px-3 py-2 mb-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                value={newLeave.startDate}
-                onChange={(e) => handleDateChange("startDate", e.target.value)}
-                min={getMinAllowedDate()}
-              />
+          {/* Leave Type */}
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Leave Type:
+          </label>
+          <select
+            value={newLeave.leaveType}
+            onChange={(e) =>
+              setNewLeave({ ...newLeave, leaveType: e.target.value })
+            }
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          >
+            {leaveTypes.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
 
-              <label className="block font-medium text-gray-700 mb-1">End Date:</label>
-              <input
-                type="date"
-                className="w-full border border-gray-300 px-3 py-2 mb-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                value={newLeave.endDate}
-                onChange={(e) => handleDateChange("endDate", e.target.value)}
-                min={newLeave.startDate || getMinAllowedDate()}
-              />
+          {/* Reason */}
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Reason (Optional):
+          </label>
+          <textarea
+            value={newLeave.reason}
+            onChange={(e) => setNewLeave({ ...newLeave, reason: e.target.value })}
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-4 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            placeholder="Reason for leave..."
+            rows="3"
+          />
 
-              {newLeave.startDate && newLeave.endDate && (
-                <div className="bg-blue-50 border border-blue-300 text-blue-900 text-sm font-medium p-2 mb-4">
-                  Working days: {calculateWorkingDays(newLeave.startDate, newLeave.endDate)}{" "}
-                  {calculateWorkingDays(newLeave.startDate, newLeave.endDate) === 1 ? "day" : "days"}{" "}
-                  <span className="text-gray-500 font-normal">(weekends excluded)</span>
-                </div>
-              )}
-
-              <label className="block font-medium text-gray-700 mb-1">Leave Type:</label>
-              <select
-                value={newLeave.leaveType}
-                onChange={(e) => setNewLeave({ ...newLeave, leaveType: e.target.value })}
-                className="w-full border border-gray-300  px-3 py-2 mb-3 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-              >
-                {leaveTypes.map((type) => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
-              </select>
-
-              <label className="block font-medium text-gray-700 mb-1">Reason (Optional):</label>
-              <textarea
-                value={newLeave.reason}
-                onChange={(e) => setNewLeave({ ...newLeave, reason: e.target.value })}
-                className="w-full border border-gray-300 px-3 py-2 mb-4 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                placeholder="Reason for leave..."
-                rows="3"
-              />
-
-              <div className="flex justify-between gap-3">
-                <button
-                  onClick={handleAddLeave}
-                  className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2  transition"
-                >
-                  Submit
-                </button>
-                <button
-                  onClick={() => setShowLeaveModal(false)}
-                  className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 transition"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
+          {/* Buttons */}
+          <div className="flex gap-3">
+            <button
+              onClick={handleAddLeave}
+              className="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-lg shadow transition"
+            >
+              Submit
+            </button>
+            <button
+              onClick={() => setShowLeaveModal(false)}
+              className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 rounded-lg shadow transition"
+            >
+              Cancel
+            </button>
           </div>
-        )}
+        </div>
       </div>
-    </div>
-    );
-};
-
+    )}
+  </div>
+);
+}
 export default LeaveManagement;
