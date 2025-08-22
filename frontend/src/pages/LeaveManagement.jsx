@@ -361,7 +361,7 @@ const LeaveManagement = () => {
       ) : (
         <div className="overflow-x-auto bg-gray-200 border border-gray-200 pb-2">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b">
+            <thead className="bg-gray-50 border-b border-gray-300">
               <tr>
                 {[
                   "Start Date",
