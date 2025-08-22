@@ -29,15 +29,15 @@ const HelpSupport = ({ isOpen, onClose, onSubmit }) => {
     }
   }, [user]);
 
-  const generateTicketId = () => {
-    return "TCK-" + Math.floor(1000 + Math.random() * 9000);
-  };
+  // const generateTicketId = () => {
+  //   return "TCK-" + Math.floor(1000 + Math.random() * 9000);
+  // };
 
   useEffect(() => {
     if (isOpen) {
       setFormData((prev) => ({
         ...prev,
-        subject: generateTicketId(),
+        subject: formData.category
       }));
     }
   }, [isOpen]);
@@ -66,9 +66,9 @@ const HelpSupport = ({ isOpen, onClose, onSubmit }) => {
     const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
       "crm@support.in"
     )}&su=${encodeURIComponent(
-      `Regarding Bugs fixing in : ${formData.category}`
+      `Regarding Inquiry in : ${formData.category}`
     )}&body=${encodeURIComponent(
-      `Hello Support Team,\n\nTicket ID: ${formData.subject}\nIssue: "${formData.problem}"\n\nDescription:\n${formData.description}\n\nPriority: ${formData.priority}\n\nScreenshot File: ${formData.image || "No file attached"} (suggested to upload again from gmail)\n\nThanks,\n${
+      `Hello Support Team,\nIssue: "${formData.problem}"\n\nDescription:\n${formData.description}\n\nPriority: ${formData.priority}\n\nScreenshot File: ${formData.image || "No file attached"} (suggested to upload again from gmail)\n\nThanks,\n${
         profileData.name
       }\nEMP ID : ${profileData.employeeId}`
     )}`;
@@ -76,7 +76,7 @@ const HelpSupport = ({ isOpen, onClose, onSubmit }) => {
     window.open(gmailUrl, "_blank");
 
     setFormData({
-      subject: generateTicketId(),
+      subject: "",
       category: "",
       priority: "Low",
       description: "",
@@ -99,14 +99,14 @@ const HelpSupport = ({ isOpen, onClose, onSubmit }) => {
         </button>
 
         {/* Header */}
-        <h2 className="text-xl font-bold mb-4 text-center text-gray-800">
-          Raise a Ticket
+        <h2 className="text-xl font-bold mb-4 text-center text-gray-800 border-b border-gray-200">
+          Help & Support
         </h2>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Ticket ID */}
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700">
               Ticket ID
             </label>
@@ -117,7 +117,7 @@ const HelpSupport = ({ isOpen, onClose, onSubmit }) => {
               disabled
               className="w-full mt-1 px-3 py-2 border border-gray-300 bg-gray-100 text-gray-700 cursor-not-allowed"
             />
-          </div>
+          </div> */}
 
           {/* Category */}
           <div>

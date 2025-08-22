@@ -395,7 +395,7 @@ const LeaveManagement = () => {
                 leaves.map((leave, idx) => (
                   <tr
                     key={leave._id || idx}
-                    className=" shadow-md hover:bg-gray-50 transition rounded-lg"
+                    className=" shadow-md hover:bg-blue-50 transition rounded-lg"
                   >
                     <td className="px-4 py-3">{formatDate(leave.startDate)}</td>
                     <td className="px-4 py-3">{formatDate(leave.endDate)}</td>

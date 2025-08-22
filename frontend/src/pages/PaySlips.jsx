@@ -4,7 +4,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faIndianRupee } from "@fortawesome/free-solid-svg-icons";
 import axios from "axios";
 
-// ✅ keep dummy data for history + breakdown
 import { payslips } from "../data";
 import { useAuth } from "../context/AuthContext";
 
@@ -14,8 +13,7 @@ const PaySlips = () => {
   const [error, setError] = useState("");
 
   const { user } = useAuth();
-  // 🔑 Get employeeId from localStorage/session (instead of useAuth)
-    const loggedInUserId = user.employeeId; // example: Rittima's employeeId
+  const loggedInUserId = user.employeeId;
 
   const fetchSalary = async () => {
     if (!loggedInUserId) {
