@@ -1,9 +1,11 @@
-import { useState } from 'react';
 import DashCard from '../timer/DashCard';
 import Card from '../components/Card';
 import LocationStatus from '../components/LocationStatus';
+import { HrTaskForm } from '../components/HrTaskCard';
+import { useState } from 'react';
 
 const Dashboard = ({ tasks, handleSaveTask, showTimerModal, onOpenTimer, onCloseTimer }) => {
+  
   return (
     <div>
       <div className='flex justify-between pt-5'>
@@ -11,7 +13,6 @@ const Dashboard = ({ tasks, handleSaveTask, showTimerModal, onOpenTimer, onClose
         <LocationStatus />
       </div>
       <Card />
-      
       <DashCard
         tasks={tasks}
         showTimerModal={showTimerModal}
