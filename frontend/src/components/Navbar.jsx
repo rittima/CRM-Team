@@ -14,7 +14,6 @@ const Navbar = ({ onOpenTimer }) => {
   return (
     <nav className="w-full bg-white shadow-md border-b border-gray-200 p-2 shadow-lg">
       <div className="max-w-8xl mx-auto px-6 py-3 flex items-center justify-between">
-        
         {/* Brand */}
         <div className="text-xl font-bold text-gray-800 tracking-wide">
           Welcome to <span className="text-gray-00">XYZ Pvt Ltd</span>
@@ -51,14 +50,21 @@ const Navbar = ({ onOpenTimer }) => {
             </button>
           </div>
         ) : (
-          <span></span>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate('/register-employee')}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition"
+            >
+              <span className="hidden sm:inline">Register Employee</span>
+            </button>
+            <span className="text-sm text-gray-500 italic">You are not signed in</span>
+          </div>
         )}
       </div>
       {/* Attendance Fullscreen */}
       {showAttendanceModal && (
         <Attendance onClose={() => setShowAttendanceModal(false)} />
       )}
-
       {/* Timer Modal
       <TimerModal
         isOpen={showTimerModal}

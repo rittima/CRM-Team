@@ -18,7 +18,7 @@ const HrProject = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("/projects");
+      const res = await axios.get("/hr-projects");
       setHrData(res.data);
     } catch (err) {
       setError("Failed to load HR projects");

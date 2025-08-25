@@ -95,6 +95,7 @@ const Salary = () => {
 
   // Auto-calculate Net Pay
   useEffect(() => {
+    if (!showForm) return;
     const basic = Number(formData.basicPay) || 0;
     const hra = +(basic * 0.5).toFixed(2); // 50%
     const ma = +(basic * 0.0625).toFixed(2); // 6.25%
@@ -211,33 +212,34 @@ const Salary = () => {
 
   const handleEdit = (salary) => {
     setFormData({
-      userId: salary.userId,
-      userName: salary.userName,
-      userEmail: salary.userEmail,
-      basicPay: salary.basicPay,
-      allowances: salary.allowances || {
-        housing: 0,
-        transport: 0,
-        medical: 0,
-        performanceBonus: 0,
-        otherAllowance: 0,
-        other: 0,
+      userId: salary.userId || "",
+      userName: salary.userName || "",
+      userEmail: salary.userEmail || "",
+      basicPay: Number(salary.basicPay) || 0,
+      allowances: {
+        housing: Number(salary.allowances?.housing) || 0,
+        transport: Number(salary.allowances?.transport) || 0,
+        medical: Number(salary.allowances?.medical) || 0,
+        performanceBonus: Number(salary.allowances?.performanceBonus) || 0,
+        otherAllowance: Number(salary.allowances?.otherAllowance) || 0,
+        other: Number(salary.allowances?.other) || 0,
       },
-      deductions: salary.deductions || {
-        incomeTax: 0,
-        socialSecurity: 0,
-        otherSecurity: 0,
-        healthInsurance: 0,
-        providentFund: 0,
-        other: 0,
+      deductions: {
+        incomeTax: Number(salary.deductions?.incomeTax) || 0,
+        socialSecurity: Number(salary.deductions?.socialSecurity) || 0,
+        otherSecurity: Number(salary.deductions?.otherSecurity) || 0,
+        healthInsurance: Number(salary.deductions?.healthInsurance) || 0,
+        providentFund: Number(salary.deductions?.providentFund) || 0,
+        other: Number(salary.deductions?.other) || 0,
       },
-      month: salary.month,
+      month: salary.month || "",
       year: salary.year || new Date().getFullYear().toString(),
-      netPay: salary.netPay,
+      netPay: Number(salary.netPay) || 0,
     });
     setEditingId(salary._id);
     setShowForm(true);
   };
+
 
   return (
     <div className="p-6 md:p-10 min-h-screen bg-gray-50">
@@ -291,77 +293,98 @@ const Salary = () => {
           </button>
         </div>
       </div>
-      {/* Salary Cards */}
+
+      {/* Salary Table */}
       {loading ? (
         <p className="text-center text-gray-600">Loading...</p>
       ) : filteredSalaries.length === 0 ? (
         <p className="text-center text-gray-500 py-10">No salary records found.</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredSalaries.map((sal) => (
-            <div
-              key={sal._id}
-              className="bg-white rounded-2xl shadow-sm p-6 flex flex-col justify-between hover:shadow-md transition"
-            >
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-gray-800 mb-1">{sal.userId} : {sal.userName}</h2>
-                  <button
-                    onClick={() => handleEdit(sal)}
-                    className="text-blue-600 hover:scale-110 transition"
-                    title="Edit"
-                  >
-                    <FileEdit />
-                  </button>
-                </div>
-                <hr className="border border-gray-300 font-semibold text-lg border-blue-200 mb-3" />
-                <p className="text-gray-500 text-sm">{sal.userEmail}</p>
-                <p className="mt-1 text-gray-600 text-sm font-medium">EMP Month : {sal.month}</p>
+        <div className="overflow-x-auto bg-white shadow rounded-lg">
+          <table className="min-w-full border-collapse">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Employee ID</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Name</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Email</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Month</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Year</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-green-700 border-b">Allowances</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-red-700 border-b">Deductions</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Net Pay</th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">Status</th>
+                <th className="px-4 py-3 text-center text-sm font-semibold text-gray-700 border-b">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredSalaries.map((sal) => {
+                const totalAllowances = Object.values(sal.allowances || {}).reduce(
+                  (acc, v) => acc + Number(v || 0),
+                  0
+                );
+                const totalDeductions = Object.values(sal.deductions || {}).reduce(
+                  (acc, v) => acc + Number(v || 0),
+                  0
+                );
 
-                <div className="mt-4 text-gray-700 space-y-1 text-sm">
-                  <p>Basic: <span className="font-medium">₹{sal.basicPay}</span></p>
-                  <p>Allowances: <span className="font-medium">₹{(sal.allowances?.housing || 0) + (sal.allowances?.medical || 0) + (sal.allowances?.performanceBonus || 0)}</span></p>
-                  <p>Deductions: <span className="font-medium">₹{(sal.deductions?.providentFund || 0) + (sal.deductions?.incomeTax || 0) + (sal.deductions?.healthInsurance || 0)}</span></p>
-                  <p className="font-semibold text-gray-900">Net Pay: ₹{sal.netPay}</p>
-                </div>
-
-                <span
-                  className={`inline-block mt-3 px-3 py-1 rounded-full text-xs font-medium ${
-                    sal.status === "Paid"
-                      ? "bg-green-100 text-green-700" 
-                      : sal.status === "Pending"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : "bg-red-100 text-red-700"
-                  }`}
-                >
-                  {sal.status}
-                </span>
-              </div>
-              <div className="mt-4 flex gap-3 justify-end">
-                <button
-                  onClick={() => handleStatus(sal._id, "Paid")}
-                  className="text-green-600 hover:scale-110 transition"
-                  title="Mark as Paid"
-                >
-                  <CheckCircle className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => handleStatus(sal._id, "Failed")}
-                  className="text-red-600 hover:scale-110 transition"
-                  title="Mark as Failed"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => handleDelete(sal._id)}
-                  className="text-gray-600 hover:text-red-600 hover:scale-110 transition"
-                  title="Delete"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-          ))}
+                return (
+                  <tr key={sal._id} className="hover:bg-gray-50 transition">
+                    <td className="px-4 py-3 text-sm text-gray-800 border-b">{sal.userId}</td>
+                    <td className="px-4 py-3 text-sm font-medium text-gray-800 border-b">{sal.userName}</td>
+                    <td className="px-4 py-3 text-sm text-gray-600 border-b">{sal.userEmail}</td>
+                    <td className="px-4 py-3 text-sm text-gray-700 border-b">{sal.month}</td>
+                    <td className="px-4 py-3 text-sm text-gray-700 border-b">{sal.year}</td>
+                    <td className="px-4 py-3 text-sm text-green-700 border-b">₹{totalAllowances}</td>
+                    <td className="px-4 py-3 text-sm text-red-700 border-b">₹{totalDeductions}</td>
+                    <td className="px-4 py-3 text-sm font-semibold text-gray-900 border-b">₹{sal.netPay}</td>
+                    <td className="px-4 py-3 border-b">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          sal.status === "Paid"
+                            ? "bg-green-100 text-green-700"
+                            : sal.status === "Pending"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {sal.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-5 flex items-center justify-center gap-2 border-b">
+                      <button
+                        onClick={() => handleEdit(sal)}
+                        className="text-blue-600 hover:scale-110 transition"
+                        title="Edit"
+                      >
+                        <FileEdit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleStatus(sal._id, "Paid")}
+                        className="text-green-600 hover:scale-110 transition"
+                        title="Mark as Paid"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleStatus(sal._id, "Failed")}
+                        className="text-red-600 hover:scale-110 transition"
+                        title="Mark as Failed"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(sal._id)}
+                        className="text-gray-600 hover:text-red-600 hover:scale-110 transition"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       )}
 
@@ -575,7 +598,6 @@ const Salary = () => {
         </div>
       )}
     </div>
-  );
+ );
 }
-
 export default Salary;

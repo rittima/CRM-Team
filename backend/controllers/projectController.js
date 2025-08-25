@@ -1,42 +1,44 @@
 import Project from "../model/Project.js";
 import User from "../model/User.js";
 
+// Utility: Generate Project ID
+const generateProjectId = async () => {
+  const lastProject = await Project.findOne().sort({ createdAt: -1 });
+  const lastId = lastProject ? lastProject.projectId : "PRJ000";
+  const num = parseInt(lastId.replace("PRJ", ""), 10) + 1;
+  return `PRJ${num.toString().padStart(3, "0")}`;
+};
+
 // Create a new project
 export const createProject = async (req, res) => {
   try {
-    console.log('📝 Creating new project:', req.body);
+    console.log("📝 Creating new project:", req.body);
 
     const {
-      projectId,
       title,
       description,
       manager,
       email,
-      Skill, // Note: Using the form field name
-      tool,  // Note: Using the form field name
+      skills,  // fix: consistent naming
+      tools,   // fix: consistent naming
       status,
       teamMembers
     } = req.body;
 
-    if (!projectId || !title || !manager || !email) {
+    if (!title || !manager || !email) {
       return res.status(400).json({
         success: false,
-        message: 'Project ID, Title, Manager name, and Manager email are required.'
+        message: "Title, Manager name, and Manager email are required."
       });
     }
 
-    const existingProject = await Project.findOne({ projectId: projectId.toUpperCase() });
-    if (existingProject) {
-      return res.status(400).json({
-        success: false,
-        message: 'A project with this Project ID already exists.'
-      });
-    }
+    // ✅ Generate new projectId here
+    const projectId = await generateProjectId();
 
     if (teamMembers && teamMembers.length > 4) {
       return res.status(400).json({
         success: false,
-        message: 'Maximum 4 team members are allowed.'
+        message: "Maximum 4 team members are allowed."
       });
     }
 
@@ -45,7 +47,7 @@ export const createProject = async (req, res) => {
         if (!member.empId || !member.empEmail) {
           return res.status(400).json({
             success: false,
-            message: 'All team members must have both Employee ID and Email.'
+            message: "All team members must have both Employee ID and Email."
           });
         }
 
@@ -60,14 +62,14 @@ export const createProject = async (req, res) => {
     }
 
     const projectData = {
-      projectId: projectId.toUpperCase(),
+      projectId,
       title,
       description,
       manager,
       email: email.toLowerCase(),
-      skills: req.body.skills || "",
-      tools: req.body.tools || "",
-      status: status || 'Pending',
+      skills: skills || "",
+      tools: tools || "",
+      status: status || "Pending",
       teamMembers: teamMembers || [],
       createdBy: req.user._id,
       lastUpdatedBy: req.user._id
@@ -76,11 +78,11 @@ export const createProject = async (req, res) => {
     const newProject = new Project(projectData);
     const savedProject = await newProject.save();
 
-    console.log('✅ Project created successfully:', savedProject.projectId);
+    console.log("✅ Project created successfully:", savedProject.projectId);
 
     res.status(201).json({
       success: true,
-      message: 'Project created successfully!',
+      message: "Project created successfully!",
       project: {
         id: savedProject._id,
         projectId: savedProject.projectId,
@@ -93,13 +95,13 @@ export const createProject = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ Error creating project:', error);
+    console.error("❌ Error creating project:", error);
 
-    if (error.name === 'ValidationError') {
+    if (error.name === "ValidationError") {
       const validationErrors = Object.values(error.errors).map(err => err.message);
       return res.status(400).json({
         success: false,
-        message: 'Validation Error',
+        message: "Validation Error",
         errors: validationErrors
       });
     }
@@ -107,14 +109,14 @@ export const createProject = async (req, res) => {
     if (error.code === 11000) {
       return res.status(400).json({
         success: false,
-        message: 'A project with this Project ID already exists.'
+        message: "A project with this Project ID already exists."
       });
     }
 
     res.status(500).json({
       success: false,
-      message: 'Internal server error while creating project.',
-      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+      message: "Internal server error while creating project.",
+      error: process.env.NODE_ENV === "development" ? error.message : undefined
     });
   }
 };
@@ -310,22 +312,32 @@ export const getProjectStats = async (req, res) => {
   }
 };
 
+
 // Get projects by current user
 export const getMyProjects = async (req, res) => {
   try {
-    const userEmail = req.user.email;
+    const userEmail = req.user.email?.toLowerCase();
     const userEmpId = req.user.employeeId;
-    console.log('👤 Fetching projects for user:', userEmail);
+
+    console.log('👤 Fetching projects for user:', userEmail, userEmpId);
 
     const projects = await Project.find({
-      isActive: true,
-      $or: [
-        { email: userEmail },
-        { 'teamMembers.empEmail': userEmail },
-        { 'teamMembers.empId': userEmpId }
+      $and: [
+        {
+          $or: [
+            { statusFlag: true },               // ✅ Active projects
+            { statusFlag: { $exists: false } }  // ✅ Handle old projects
+          ]
+        },
+        {
+          $or: [
+            { email: userEmail },
+            { 'teamMembers.empEmail': userEmail },
+            { 'teamMembers.empId': userEmpId }
+          ]
+        }
       ]
     })
-      .populate('createdBy lastUpdatedBy', 'name email employeeId')
       .sort({ createdAt: -1 })
       .lean();
 
@@ -336,7 +348,7 @@ export const getMyProjects = async (req, res) => {
       projects
     });
   } catch (error) {
-    console.error('❌ Error fetching user projects:', error);
+    console.error('❌ Error fetching user projects:', error.message);
     res.status(500).json({
       success: false,
       message: 'Internal server error while fetching user projects.'

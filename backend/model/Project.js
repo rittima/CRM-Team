@@ -57,7 +57,14 @@ const projectSchema = new mongoose.Schema({
   },
   teamMembers: {
     type: [teamMemberSchema]
+  },
+  
+  // ✅ Soft delete / active-archive flag
+  statusFlag: {
+    type: Boolean,
+    default: true
   }
+
 }, {
   timestamps: true,
   versionKey: false

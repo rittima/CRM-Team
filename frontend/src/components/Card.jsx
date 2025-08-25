@@ -12,7 +12,7 @@ const Card = () => {
       : "Not Available",
     designation: user?.designation || "Not Set",
     department: user?.domain || "Not Set",
-    project: "Project Assignment Pending",
+    shiftTiming: user?.shiftTiming || "Not Set",
     status: user?.profileCompleted ? "Profile Completed" : "Profile Incomplete",
   };
 
@@ -44,8 +44,8 @@ const Card = () => {
               {currentEmployee.joiningDate}
             </p>
             <p>
-              <span className="font-semibold text-blue-900">Project:</span>{" "}
-              {currentEmployee.project}
+              <span className="font-semibold text-blue-900">Shift Timing:</span>{" "}
+              {currentEmployee.shiftTiming}
             </p>
             <p>
               <span className="font-semibold text-blue-900">Status:</span>{" "}

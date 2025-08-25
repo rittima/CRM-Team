@@ -1,5 +1,3 @@
-// 
-
 import { useAuth } from "../context/AuthContext";
 import { CircleStop, ClipboardList, Pause, Play, TimerIcon } from "lucide-react";
 import Timer from "./Timer";
@@ -127,6 +125,7 @@ const DashCard = ({ tasks, onSaveTask, showTimerModal, onOpenTimer, onCloseTimer
     const fetchMyProjects = async () => {
       try {
         const res = await axios.get("/projects/my-projects");
+        
         if (res.data.success) setProjects(res.data.projects);
       } catch (err) {
         console.error("Error fetching my projects:", err);
@@ -152,19 +151,30 @@ const DashCard = ({ tasks, onSaveTask, showTimerModal, onOpenTimer, onCloseTimer
 
         {/* Project Info */}
         <div className="bg-gray-50 p-4 rounded-xl mb-6">
-          <p className="text-gray-700 text-lg">
+          <p className="text-gray-700 text-md">
             <span className="font-semibold text-gray-900">Project Working On:</span>{" "}
-            {loading
-              ? "Loading..."
-              : projects.length > 0
-              ? projects.map((p) => p.title).join(", ")
-              : "Not assigned"}
+            {loading ? (
+              <span className="text-gray-500">Loading...</span>
+            ) : projects.length > 0 ? (
+              <span className=" p-2 flex flex-wrap gap-2">
+                {projects.map((p) => (
+                  <span
+                    key={p._id}
+                    className="text-blue-700 font-medium border-2 border-blue-200 bg-white px-3 py-1 rounded-full shadow-sm hover:bg-blue-100 transition"
+                  >
+                    {p.title}
+                  </span>
+                ))}
+              </span>
+            ) : (
+              <span className="text-red-500 ml-2">Not assigned</span>
+            )}
           </p>
         </div>
 
         {/* Add Task with Timer */}
         <div className="flex items-center justify-between mb-6">
-          <p className="text-gray-800 text-lg font-semibold">Task Report</p>
+          <p className="text-gray-800 text-xl font-bold">Task Report</p>
           <button
             onClick={onOpenTimer}
             className="px-5 py-2 rounded-lg bg-blue-600 text-white font-medium shadow hover:bg-blue-700 hover:scale-105 transition"
@@ -175,10 +185,10 @@ const DashCard = ({ tasks, onSaveTask, showTimerModal, onOpenTimer, onCloseTimer
 
         {/* HR Assigned Tasks */}
         <div className="mb-8">
-          <h4 className="font-semibold text-gray-700 mb-3">HR Assigned Tasks</h4>
+          <h4 className="font-semibold text-gray-700 mb-3">HR Assigned Tasks :</h4>
           {hrTasks.length === 0 ? (
-            <div className="bg-yellow-50 rounded-lg ">
-              <p className="text-base text-gray-600 italic py-4 font-medium text-center">
+            <div className="bg-yellow-100 rounded-lg ">
+              <p className="text-base text-yellow-800 italic py-4 font-medium text-center">
                 No HR tasks assigned.
               </p>
             </div>
@@ -197,7 +207,7 @@ const DashCard = ({ tasks, onSaveTask, showTimerModal, onOpenTimer, onCloseTimer
                       className={`inline-block mt-2 text-xs font-medium px-2 py-1 rounded-full w-fit
                         ${task.status === "Completed" 
                           ? "bg-green-100 text-green-700" 
-                          : "bg-blue-100 text-blue-700"}`}
+                          : "bg-yellow-100 text-yellow-700"}`}
                     >
                       {task.status}
                     </span>
@@ -212,10 +222,10 @@ const DashCard = ({ tasks, onSaveTask, showTimerModal, onOpenTimer, onCloseTimer
 
         {/* Employee Self Tasks */}
         <div>
-          <h4 className="font-semibold text-gray-700 mb-3">My Own Tasks</h4>
+          <h4 className="font-semibold text-gray-700 mb-3">My Own Tasks :</h4>
           {tasks.length === 0 ? (
-            <div className="bg-yellow-50 rounded-lg ">
-              <p className="text-base text-gray-600 italic py-4 font-medium text-center">
+            <div className="bg-yellow-100 rounded-lg ">
+              <p className="text-base text-yellow-800 italic py-4 font-medium text-center">
                 No self tasks added yet.
               </p>
             </div>
@@ -224,7 +234,7 @@ const DashCard = ({ tasks, onSaveTask, showTimerModal, onOpenTimer, onCloseTimer
               {tasks.map((task, index) => (
                 <li
                   key={index}
-                  className="p-5 bg-blue-50 border border-blue-100 rounded-xl hover:shadow-md transition"
+                  className="p-5 bg-gray-50 border border-blue-100 rounded-xl hover:shadow-md transition"
                 >
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center">

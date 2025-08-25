@@ -4,6 +4,7 @@ import {
   LayoutDashboard, Users, ReceiptText, FolderOpen,
   Users2, CalendarCheck2, BarChart,
   IndianRupeeIcon, User2Icon, FolderCheck,
+  UserRoundCogIcon,
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -24,7 +25,8 @@ const Sidebar = () => {
     { to: "/profile", label: "Profile", icon: User2Icon },
     { to: "/hr", label: "HR Records", icon: Users },
     { to: "/hrproject", label: "HR Project", icon: FolderCheck },
-    { to: "/salary", label: "Salary", icon: IndianRupeeIcon },
+    { to: "/salary", label: "Employee Salary", icon: UserRoundCogIcon },
+    { to: "/payslip", label: "Payslips & Salary", icon: IndianRupeeIcon },
     // { to: "/expenses", label: "Expense", icon: ReceiptText },
     { to: "/workload", label: "Staff Workload", icon: Users2 },
     { to: "/support", label: "Support", icon: BarChart },

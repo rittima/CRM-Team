@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, X } from "lucide-react";
 import axios from "../services/axios";
 
@@ -32,9 +32,7 @@ export default function Login() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const onChange = (e) =>
-    setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
+  const onChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
@@ -43,69 +41,7 @@ export default function Login() {
     setPasswordData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handlePasswordSubmit = async (e) => {
-    e.preventDefault();
-    if (
-      !passwordData.email ||
-      !passwordData.currentPassword ||
-      !passwordData.newPassword ||
-      !passwordData.confirmPassword
-    ) {
-      setErr("Please fill in all password fields");
-      return;
-    }
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setErr("New password and confirm password do not match");
-      return;
-    }
-    if (passwordData.newPassword.length < 6) {
-      setErr("New password must be at least 6 characters long");
-      return;
-    }
-    if (passwordData.currentPassword === passwordData.newPassword) {
-      setErr("New password must be different from current password");
-      return;
-    }
-
-    try {
-      setPasswordLoading(true);
-      setErr("");
-      const loginResponse = await axios.post("/auth/login", {
-        email: passwordData.email,
-        password: passwordData.currentPassword,
-      });
-
-      if (loginResponse.data.token) {
-        await axios.put(
-          "/auth/change-password",
-          {
-            currentPassword: passwordData.currentPassword,
-            newPassword: passwordData.newPassword,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${loginResponse.data.token}`,
-            },
-          }
-        );
-        alert("Password changed successfully! Please login with new password.");
-        setPasswordData({
-          email: "",
-          currentPassword: "",
-          newPassword: "",
-          confirmPassword: "",
-        });
-        setShowChangePassword(false);
-      }
-    } catch (error) {
-      setErr(
-        error.response?.data?.message ||
-          "Error changing password. Please try again."
-      );
-    } finally {
-      setPasswordLoading(false);
-    }
-  };
+  // ...existing code...
 
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -118,15 +54,13 @@ export default function Login() {
   };
 
   return (
-    <div className="flex items-center justify-center pt-20 bg-gradient-to-t from-gray-50 to-gray-100">
-      
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="w-full max-w-md bg-white shadow-lg p-8">
         {/* Header */}
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-gray-800">Welcome Back</h1>
           <p className="text-gray-500 text-sm">Sign in to your CRM account</p>
         </div>
-
         {/* Error */}
         {err && (
           <div className="mb-4  border border-red-400 bg-red-50 px-4 py-2 text-sm text-red-600">
@@ -182,7 +116,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full cursor-pointer bg-gray-800 text-white font-semibold py-2  hover:bg-blue-700 transition disabled:opacity-50"
+            className="w-full cursor-pointer bg-blue-600 text-white font-semibold py-2  hover:bg-blue-700 transition disabled:opacity-50"
           >
             {loading ? "Signing in..." : "Sign In"}
           </button>
@@ -204,6 +138,7 @@ export default function Login() {
 
       </div>
 
+  {/* Password Change Modal removed for cleanup */}
       {/* Password Change Modal */}
       {showChangePassword && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -220,7 +155,69 @@ export default function Login() {
               </button>
             </div>
 
-            <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              if (
+                !passwordData.email ||
+                !passwordData.currentPassword ||
+                !passwordData.newPassword ||
+                !passwordData.confirmPassword
+              ) {
+                setErr("Please fill in all password fields");
+                return;
+              }
+              if (passwordData.newPassword !== passwordData.confirmPassword) {
+                setErr("New password and confirm password do not match");
+                return;
+              }
+              if (passwordData.newPassword.length < 6) {
+                setErr("New password must be at least 6 characters long");
+                return;
+              }
+              if (passwordData.currentPassword === passwordData.newPassword) {
+                setErr("New password must be different from current password");
+                return;
+              }
+
+              try {
+                setPasswordLoading(true);
+                setErr("");
+                const loginResponse = await axios.post("/auth/login", {
+                  email: passwordData.email,
+                  password: passwordData.currentPassword,
+                });
+
+                if (loginResponse.data.token) {
+                  await axios.put(
+                    "/auth/change-password",
+                    {
+                      currentPassword: passwordData.currentPassword,
+                      newPassword: passwordData.newPassword,
+                    },
+                    {
+                      headers: {
+                        Authorization: `Bearer ${loginResponse.data.token}`,
+                      },
+                    }
+                  );
+                  alert("Password changed successfully! Please login with new password.");
+                  setPasswordData({
+                    email: "",
+                    currentPassword: "",
+                    newPassword: "",
+                    confirmPassword: "",
+                  });
+                  setShowChangePassword(false);
+                }
+              } catch (error) {
+                setErr(
+                  error.response?.data?.message ||
+                    "Error changing password. Please try again."
+                );
+              } finally {
+                setPasswordLoading(false);
+              }
+            }} className="space-y-4">
               {err && (
                 <div className="mb-2  border border-red-400 bg-red-50 px-4 py-2 text-sm text-red-600">
                   {err}

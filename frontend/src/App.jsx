@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import ProtectedRoute from './components/ProtectedRoute';
+import RegisterEmployee from './pages/RegisterEmployee.jsx';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import NotFound from './pages/NotFound';
@@ -12,6 +13,7 @@ import HrRecord from './pages/HrRecord';
 import StaffWorkload from './pages/StaffWorkload';
 import Expenses from './pages/Expenses';
 import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import Signup from './pages/Signup';
 import Profile from './pages/Profile';
 import LeaveManagement from './pages/LeaveManagement';
@@ -22,17 +24,18 @@ import PaySlips from './pages/PaySlips';
 
 function App() {
   const [tasks, setTasks] = useState([]);
-    const [showTimerModal, setShowTimerModal] = useState(false);
-  
-    // Called when saving a task from the timer modal
-    const handleSaveTask = (taskTitle, desc, time) => {
-      const newTask = {
-        title: taskTitle,
-        description: desc,
-        timeTaken: time,
-      };
-      setTasks(prev => [...prev, newTask]);
+  const [showTimerModal, setShowTimerModal] = useState(false);
+  const location = useLocation();
+
+  // Called when saving a task from the timer modal
+  const handleSaveTask = (taskTitle, desc, time) => {
+    const newTask = {
+      title: taskTitle,
+      description: desc,
+      timeTaken: time,
     };
+    setTasks(prev => [...prev, newTask]);
+  };
 
   return (
     <>
@@ -44,16 +47,20 @@ function App() {
         <Sidebar />
 
         <div className="flex-1 flex flex-col">
-          <Navbar 
-            tasks={tasks}
-            showTimerModal={showTimerModal}
-            onOpenTimer={() => setShowTimerModal(true)}
-            onCloseTimer={() => setShowTimerModal(false)}
-            onSaveTask={handleSaveTask}
-          />
+          {/* Hide Navbar on login, signup, and register-employee routes using useLocation */}
+          {!["/login", "/signup", "/register-employee"].includes(location.pathname) && (
+            <Navbar 
+              tasks={tasks}
+              showTimerModal={showTimerModal}
+              onOpenTimer={() => setShowTimerModal(true)}
+              onCloseTimer={() => setShowTimerModal(false)}
+              onSaveTask={handleSaveTask}
+            />
+          )}
 
           <main className="flex-1 bg-gray-50">
             <Routes>
+              <Route path="/register-employee" element={<RegisterEmployee />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/" element={<ProtectedRoute><Dashboard 

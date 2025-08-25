@@ -1,14 +1,12 @@
 import React, { useState } from "react";
 import PrjTeamModle from "./PrjTeamModle";
-import { hrData } from "../data";
 
 const PrjModle = ({ project, onClose, isHrView = false }) => {
   const [showTeamModal, setShowTeamModal] = useState(false);
   const [teamMembers, setTeamMembers] = useState([]);
 
-  const handleTeamView = (projectId) => {
-    const members = hrData.filter((emp) => emp.projectId === projectId);
-    setTeamMembers(members);
+  const handleTeamView = () => {
+    setTeamMembers(project.teamMembers || []);
     setShowTeamModal(true);
   };
 
@@ -76,7 +74,7 @@ const PrjModle = ({ project, onClose, isHrView = false }) => {
 
           {isHrView ? (
             <button
-              onClick={() => handleTeamView(project.projectId)}
+              onClick={handleTeamView}
               className="px-5 py-2 bg-blue-600 text-white shadow hover:bg-blue-700 transition"
             >
               Team Members

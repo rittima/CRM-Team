@@ -41,4 +41,5 @@ router.get("/", protect, hrOrAdmin, getAllProjects);         // Get all projects
 router.put("/:id", protect, updateProject);                  // Update project
 router.delete("/:id", protect, hrOrAdmin, deleteProject);    // Delete project (HR/Admin only)
 
+
 export default router;

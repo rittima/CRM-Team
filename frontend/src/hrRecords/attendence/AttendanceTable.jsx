@@ -118,17 +118,17 @@ const AttendanceTable = ({ data, loading }) => {
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                 <span className={`${record.workingHours > 8 ? "text-red-600" : "text-green-600"}`}>
                   {Math.floor(record.workingHours)} hrs {Math.round((record.workingHours % 1) * 60)} mins
-                </span> 
+                </span>
               </td>
 
               <td className="px-6 py-4 whitespace-nowrap">
                 <span
-                  className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                  className={`px-2 py-1 rounded-full text-sm font-semibold ${
                     record.status === "checked-in"
-                      ? "text-green-500"
+                      ? "bg-green-100 text-green-700"
                       : record.status === "checked-out"
-                      ? "text-red-500"
-                      : "bg-yellow-100 text-yellow-800"
+                      ? "bg-red-100 text-red-700"
+                      : "bg-gray-100 text-gray-700"
                   }`}
                 >
                   {record.status}

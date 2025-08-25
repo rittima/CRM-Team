@@ -63,14 +63,15 @@ function Attendance({ onClose }) {
     try {
       const response = await api.post("/attendance/checkin", { userId: user._id });
 
+      Swal.fire({
+        icon: "success",
+        title: "Check-out Successfully!",
+        text: response.data.locationTrackingActivated ? "Location tracking end." : undefined,
+        showConfirmButton: false,
+        timer: 2000
+      });
       if (response.data.locationTrackingActivated) {
         startTracking();
-        Toast.fire({ 
-          icon: "success", 
-          title: `${response.data.message} - Location tracking started` 
-        });
-      } else {
-        Toast.fire({ icon: "success", title: response.data.message });
       }
 
       window.dispatchEvent(new CustomEvent("attendanceUpdate", { 
@@ -79,10 +80,16 @@ function Attendance({ onClose }) {
       localStorage.setItem("attendanceEvent", Date.now().toString());
 
       fetchTodayStatus();
+      if (locationTracker && typeof locationTracker.refetchAttendanceStatus === "function") {
+        locationTracker.refetchAttendanceStatus();
+      }
     } catch (error) {
-      Toast.fire({
-        icon: "error",
-        title: error.response?.data?.message || "Check-In Failed. Try again."
+      Swal.fire({
+        icon: "success",
+        title: "Check-in Successfully!",
+        text: error.response?.data?.message || "Location tracking started.",
+        showConfirmButton: false,
+        timer: 2000
       });
     } finally {
       setLoading(false);
@@ -104,14 +111,20 @@ function Attendance({ onClose }) {
 
       if (response.data.locationTrackingDeactivated) {
         stopTracking();
-        Toast.fire({
+        Swal.fire({
           icon: "success",
-          title: `${response.data.message} - Working Hours: ${response.data.workingHours}h - Location tracking stopped`
+          title: "Check-out Successfully!",
+          text: `Working Hours: ${response.data.workingHours}h\nLocation tracking stopped.`,
+          showConfirmButton: false,
+          timer: 2000
         });
       } else {
-        Toast.fire({
+        Swal.fire({
           icon: "success",
-          title: `${response.data.message} - Working Hours: ${response.data.workingHours}h`
+          title: "Check-out Successfully!",
+          text: `Working Hours: ${response.data.workingHours}h`,
+          showConfirmButton: false,
+          timer: 2000
         });
       }
 
@@ -143,7 +156,6 @@ function Attendance({ onClose }) {
   return (
     <div className="fixed bg-black/30 backdrop-blur-sm inset-0 z-[9999] flex items-center justify-center">
       <div className="relative w-[380px] bg-white p-8 text-center shadow-xl animate-fadeIn">
-        
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -172,10 +184,10 @@ function Attendance({ onClose }) {
           <Clock value={date} size={200} />
           <div className="absolute inset-0 flex items-center justify-center text-gray-700 font-bold">
             {/* Clock Numbers */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2">12</div>
-            <div className="absolute right-0 top-1/2 -translate-y-1/2">3</div>
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2">6</div>
-            <div className="absolute left-0 top-1/2 -translate-y-1/2">9</div>
+            <div className="absolute top-2 left-1/2 -translate-x-1/2">12</div>
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">3</div>
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2">6</div>
+            <div className="absolute left-3 top-1/2 -translate-y-1/2">9</div>
           </div>
         </div>
 

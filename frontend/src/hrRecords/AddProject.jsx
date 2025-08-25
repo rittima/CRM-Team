@@ -27,6 +27,7 @@ const AddProject = ({ onClose, onSave }) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+
   const handleTeamMemberChange = (index, field, value) => {
     setFormData((prev) => {
       const updated = [...prev.teamMembers];
@@ -52,8 +53,8 @@ const AddProject = ({ onClose, onSave }) => {
 
   const handleSaveClick = async () => {
     // Enhanced validation
-    if (!formData.projectId || !formData.title || !formData.manager || !formData.email) {
-      setError("Project ID, Title, Manager name, and Manager email are required.");
+    if (!formData.title || !formData.manager || !formData.email) {
+      setError("Title, Manager name, and Manager email are required.");
       return;
     }
 
@@ -153,8 +154,20 @@ const AddProject = ({ onClose, onSave }) => {
 
             {/* Project Details */}
             <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {/* Project ID (auto-generated, read-only) */}
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <ClipboardList size={18} />
+                </span>
+                <input
+                  type="text"
+                  value="Auto-generated"
+                  readOnly
+                  disabled
+                  className="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg shadow-sm bg-gray-100 text-gray-500 cursor-not-allowed"
+                />
+              </div>
             {[
-                { name: "projectId", placeholder: "Project ID", icon: <ClipboardList size={18} /> },
                 { name: "title", placeholder: "Project Title", icon: <FileText size={18} /> },
                 { name: "manager", placeholder: "Manager Name", icon: <User size={18} /> },
                 { name: "email", placeholder: "Manager Email", icon: <Mail size={18} />, type: "email" },
@@ -263,3 +276,4 @@ const AddProject = ({ onClose, onSave }) => {
 };
 
 export default AddProject;
+

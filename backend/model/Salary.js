@@ -27,28 +27,33 @@ const salarySchema = new mongoose.Schema(
       min: 0,
     },
     allowances: {
-      type: Number,
-      default: 0,
-      min: 0,
+      housing: { type: Number, default: 0, min: 0 },
+      medical: { type: Number, default: 0, min: 0 },
+      performanceBonus: { type: Number, default: 0, min: 0 },
     },
     deductions: {
-      type: Number,
-      default: 0,
-      min: 0,
+      providentFund: { type: Number, default: 0, min: 0 },
+      incomeTax: { type: Number, default: 0, min: 0 },
+      healthInsurance: { type: Number, default: 0, min: 0 },
     },
     netPay: {
       type: Number,
       min: 0,
       // ❌ remove required:true → it will be auto-calculated
     },
-    month: {
-      type: String,
+    
+    month: { 
+      type: String, 
       required: true,
-      match: /^(0?[1-9]|1[0-2])-(\d{4})$/, // MM-YYYY
+      enum: [
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+      ]
     },
+    year: { type: Number, required: true },
     status: {
       type: String,
-      enum: ["Pending", "Processed", "Paid", "Failed"],
+      enum: ["Pending", "Paid", "Failed"],
       default: "Pending",
     },
     paymentDate: Date,
@@ -56,10 +61,12 @@ const salarySchema = new mongoose.Schema(
       type: String, // ✅ Changed from ObjectId → String (to accept EMP codes)
     },
     processedAt: Date,
+    
     remarks: {
       type: String,
       maxlength: 300,
     },
+    downloadUrl: { type: String },
     payslip: {
       filename: String,
       path: String,
@@ -75,16 +82,29 @@ const salarySchema = new mongoose.Schema(
 // Auto-calculate netPay before save
 salarySchema.pre("save", function (next) {
   if (this.basicPay !== undefined) {
-    const allowances = this.allowances || 0;
-    const deductions = this.deductions || 0;
-    this.netPay = Math.max(0, this.basicPay + allowances - deductions);
+    // Calculate total allowances
+    const allowances = this.allowances || {};
+    const totalAllowances =
+      (allowances.housing || 0) +
+      (allowances.medical || 0) +
+      (allowances.performanceBonus || 0);
+    // Calculate total deductions
+    const deductions = this.deductions || {};
+    const totalDeductions =
+      (deductions.providentFund || 0) +
+      (deductions.incomeTax || 0) +
+      (deductions.healthInsurance || 0);
+    this.netPay = Math.max(0, this.basicPay + totalAllowances - totalDeductions);
   }
   next();
 });
 
 // Indexes for faster queries
-salarySchema.index({ userId: 1, month: 1 }, { unique: true });
+salarySchema.index({ userId: 1, month: 1, year: 1 }, { unique: true });
 salarySchema.index({ status: 1 });
 salarySchema.index({ createdAt: -1 });
+salarySchema.index({ "allowances.housing": 1 });
+salarySchema.index({ "allowances.transport": 1 });
+salarySchema.index({ "allowances.medical": 1 });
 
 export default mongoose.model("Salary", salarySchema);

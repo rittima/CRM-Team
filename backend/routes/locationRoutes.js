@@ -4,7 +4,8 @@ import {
   getCurrentLocation,
   getLocationHistory,
   getAllEmployeeLocations,
-  clearAllLocationHistory
+  clearAllLocationHistory,
+  clearInactiveLocationRecords
 } from '../controllers/locationController.js';
 import { protect, hrOrAdmin } from '../middleware/authMiddleware.js';
 import Location from '../model/Location.js';
@@ -20,6 +21,8 @@ router.get('/history', protect, getLocationHistory);
 // HR/Admin routes - temporarily remove role restriction for debugging
 router.get('/all-employees', protect, getAllEmployeeLocations);
 router.delete('/clear-all', protect, hrOrAdmin, clearAllLocationHistory);
+// New route to clear only inactive location records
+router.delete('/clear-inactive', protect, hrOrAdmin, clearInactiveLocationRecords);
 
 // Debug endpoint to check current user role
 router.get('/debug-user', protect, async (req, res) => {

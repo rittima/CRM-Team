@@ -3,17 +3,33 @@ import Salary from "../model/Salary.js";
 
 const router = express.Router();
 
-/**
- * @route   POST /api/salary
- * @desc    Create new salary record
- * @access  Admin / HR
- */
 router.post("/", async (req, res) => {
   try {
+    const { userId, month, year } = req.body;
+
+    // if (req.body.userId === userId) {
+    //   return res.status(403).json({ error: "HR cannot create salary for themselves." });
+    // }
+
+
+    // Check if salary already exists before inserting
+    const existing = await Salary.findOne({ userId, month, year });
+    if (existing) {
+      return res.status(409).json({
+        error: `Salary for ${userId} in ${month} ${year} already exists.`,
+      });
+    }
+
     const salary = new Salary(req.body);
     await salary.save();
     res.status(201).json(salary);
   } catch (err) {
+    if (err.code === 11000) {
+      // Fallback in case duplicate slips through
+      return res.status(409).json({
+        error: "Duplicate salary record. Salary for this employee/month/year already exists.",
+      });
+    }
     res.status(400).json({ error: err.message });
   }
 });
@@ -25,38 +41,45 @@ router.post("/", async (req, res) => {
  */
 router.get("/", async (req, res) => {
   try {
-    const salaries = await Salary.find().sort({ createdAt: -1 });
+    const { userId } = req.query;
+    let query = {};
+    if (userId) query.userId = userId;
+    const salaries = await Salary.find(query).sort({ createdAt: -1 });
     res.json(salaries);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// /**
-//  * @route   GET /api/salary/:id
-//  * @desc    Get salary by ID
-//  * @access  Admin / HR / User (self)
-//  */
-// router.get("/:id", async (req, res) => {
+// // GET /api/salary/user/:userId
+// router.get('/user/:userId', async (req, res) => {
 //   try {
-//     const salary = await Salary.findById(req.params.id);
-//     if (!salary) return res.status(404).json({ error: "Salary record not found" });
-//     res.json(salary);
+//     const payslips = await Salary.find({ userId: req.params.userId });
+//     if (!payslips) return res.status(404).json({ error: "Salary not found for this employeeId" });
+//     // Always return an array, even if empty
+//     return res.status(200).json(payslips);
 //   } catch (err) {
-//     res.status(500).json({ error: err.message });
+//     return res.status(500).json({ error: 'Server error' });
 //   }
 // });
 
+
 // GET /api/salary/user/:userId
-router.get("/user/:userId", async (req, res) => {
+router.get('/user/:userId', async (req, res) => {
   try {
-    const salary = await Salary.findOne({ userId: req.params.userId });
-    if (!salary) return res.status(404).json({ error: "Salary not found for this employeeId" });
-    res.json(salary);
+    const payslips = await Salary.find({ userId: req.params.userId });
+
+    if (!payslips || payslips.length === 0) {
+      return res.status(200).json([]); // Always return an empty array instead of 404
+    }
+
+    return res.status(200).json(payslips);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: 'Server error' });
   }
 });
+
+
 
 /**
  * @route   PUT /api/salary/:id

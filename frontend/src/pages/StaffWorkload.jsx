@@ -1,135 +1,117 @@
-import React, { useState } from "react";
-import "../Styles/StaffWorkload.scss";
+
+
+import { Bar, Doughnut, Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  PointElement,
+  LineElement
+} from "chart.js";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ArcElement,
+  PointElement,
+  LineElement
+);
+
+// Dummy data for demonstration
+const tasks = [
+  { name: "Task 1", status: 80 },
+  { name: "Task 2", status: 50 },
+  { name: "Task 3", status: 100 },
+];
+
+const projects = [
+  { name: "Project Alpha", status: 60 },
+  { name: "Project Beta", status: 90 },
+];
+
+const employees = [
+  { name: "John Doe", efficiency: 85 },
+  { name: "Jane Smith", efficiency: 92 },
+  { name: "Sam Wilson", efficiency: 78 },
+];
 
 const StaffWorkload = () => {
-  const [filterDepartment, setFilterDepartment] = useState("All");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 4;
+  // Chart Data
+  const taskBarData = {
+    labels: tasks.map(t => t.name),
+    datasets: [
+      {
+        label: "Task Progress (%)",
+        data: tasks.map(t => t.status),
+        backgroundColor: "#3b82f6",
+      },
+    ],
+  };
 
-  const workloadData = [
-    { name: "Alice", department: "Development", tasks: 8, hours: 32 },
-    { name: "Bob", department: "Design", tasks: 5, hours: 20 },
-    { name: "Charlie", department: "QA", tasks: 7, hours: 35 },
-    { name: "David", department: "Development", tasks: 10, hours: 40 },
-    { name: "Eve", department: "Design", tasks: 6, hours: 28 },
-    { name: "Frank", department: "QA", tasks: 4, hours: 16 },
-    { name: "Grace", department: "Development", tasks: 9, hours: 38 },
-  ];
+  const projectDoughnutData = {
+    labels: projects.map(p => p.name),
+    datasets: [
+      {
+        label: "Project Progress",
+        data: projects.map(p => p.status),
+        backgroundColor: ["#10b981", "#f59e42"],
+      },
+    ],
+  };
 
-  const filteredData = workloadData.filter(
-    (staff) =>
-      (filterDepartment === "All" || staff.department === filterDepartment) &&
-      staff.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-  const paginatedData = filteredData.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  //download
-  const handleDownloadCSV = () => {
-    const headers = ["Name", "Department", "Tasks", "Hours"];
-    const rows = filteredData.map(({ name, department, tasks, hours }) =>
-      [name, department, tasks, hours].join(",")
-    );
-    const csvContent = [headers.join(","), ...rows].join("\n");
-
-    const blob = new Blob([csvContent], { type: "text/csv" });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "staff_workload.csv";
-    a.click();
+  const employeeLineData = {
+    labels: employees.map(e => e.name),
+    datasets: [
+      {
+        label: "Efficiency (%)",
+        data: employees.map(e => e.efficiency),
+        borderColor: "#6366f1",
+        backgroundColor: "#a5b4fc",
+        fill: true,
+        tension: 0.4,
+      },
+    ],
   };
 
   return (
-    <div className="staff-workload-page">
-      <h2 className="page-title">Staff Workload Overview</h2>
-
-      <div className="filter-bar">
-        <div>
-          <label>Department: </label>
-          <select
-            value={filterDepartment}
-            onChange={(e) => {
-              setCurrentPage(1);
-              setFilterDepartment(e.target.value);
-            }}>
-            <option value="All">All</option>
-            <option value="Development">Development</option>
-            <option value="Design">Design</option>
-            <option value="QA">QA</option>
-          </select>
+    <div className="p-8">
+      <h2 className="text-2xl font-bold mb-6">Staff Workload & Efficiency Dashboard</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        {/* Tasks Progress Chart */}
+        <div className="shadow p-4 rounded bg-white">
+          <h3 className="text-lg font-semibold mb-4">Tasks Progress</h3>
+          <Bar data={taskBarData} options={{ responsive: true, plugins: { legend: { display: false } } }} />
         </div>
-
-        <input
-          type="text"
-          placeholder="Search by name..."
-          value={searchTerm}
-          onChange={(e) => {
-            setCurrentPage(1);
-            setSearchTerm(e.target.value);
-          }}
-        />
-
-        <button className="download-btn" onClick={handleDownloadCSV}>
-          ⬇ Download CSV
-        </button>
+        {/* Projects Progress Chart */}
+        <div className="shadow p-4 rounded bg-white">
+          <h3 className="text-lg font-semibold mb-4">Projects Progress</h3>
+          <Doughnut data={projectDoughnutData} options={{ responsive: true }} />
+        </div>
+        {/* Employee Efficiency Chart */}
+        <div className="shadow p-4 rounded bg-white">
+          <h3 className="text-lg font-semibold mb-4">Employee Efficiency</h3>
+          <Line data={employeeLineData} options={{ responsive: true }} />
+        </div>
       </div>
-
-      <div className="card">
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Department</th>
-              <th>Tasks</th>
-              <th>Workload</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedData.length > 0 ? (
-              paginatedData.map((staff, idx) => (
-                <tr key={idx}>
-                  <td>{staff.name}</td>
-                  <td>{staff.department}</td>
-                  <td>{staff.tasks}</td>
-                  <td>
-                    <div className="progress-bar">
-                      <div
-                        className="fill"
-                        style={{ width: `${(staff.hours / 40) * 100}%` }}
-                      ></div>
-                    </div>
-                    <span>{staff.hours} hrs</span>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="4" style={{ textAlign: "center" }}>
-                  No results found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-
-        {totalPages > 1 && (
-          <div className="pagination">
-            {Array.from({ length: totalPages }, (_, idx) => (
-              <button
-                key={idx}
-                className={currentPage === idx + 1 ? "active" : ""}
-                onClick={() => setCurrentPage(idx + 1)}
-              >
-                {idx + 1}
-              </button>
-            ))}
-          </div>
-        )}
+      {/* Add more important metrics here as needed */}
+      <div className="mt-8">
+        <h3 className="text-lg font-semibold mb-2">Key Metrics</h3>
+        <ul className="list-disc ml-6 text-gray-700">
+          <li>Total Tasks: {tasks.length}</li>
+          <li>Total Projects: {projects.length}</li>
+          <li>Average Employee Efficiency: {(
+            employees.reduce((acc, emp) => acc + emp.efficiency, 0) / employees.length
+          ).toFixed(1)}%</li>
+        </ul>
       </div>
     </div>
   );
