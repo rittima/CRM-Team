@@ -2,123 +2,19 @@ import { useState, useEffect } from 'react';
 import api from '../services/axios';
 
 export const useLocationTracker = (user) => {
-  // Minimum distance threshold for location updates (in meters)
-  const LOCATION_THRESHOLD = 100;
-  // Time interval for periodic updates (30 minutes in milliseconds)
-  const UPDATE_INTERVAL = 30 * 60 * 1000; // 30 minutes
-  // Fetch attendance status when user changes
-  useEffect(() => {
-    if (user?._id) {
-      refetchAttendanceStatus();
-    }
-  }, [user]);
-  // Helper to refetch attendance status
-  const refetchAttendanceStatus = async () => {
-    if (user?._id) {
-      try {
-        const res = await api.get(`/attendance/status/${user._id}`);
-        setIsCheckedIn(res.data.hasCheckedIn);
-        console.log('Attendance status (refetch):', res.data.hasCheckedIn ? 'Checked In' : 'Checked Out');
-      } catch (err) {
-        setIsCheckedIn(false);
-        console.error('Error refetching attendance status:', err);
-      }
-    }
-  };
-  // Track last sent coordinates
-  const [lastCoords, setLastCoords] = useState(null);
   const [currentLocation, setCurrentLocation] = useState(null);
   const [locationError, setLocationError] = useState(null);
   const [isTracking, setIsTracking] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(null);
-  const [isCheckedIn, setIsCheckedIn] = useState(false);
-  const [trackingInterval, setTrackingInterval] = useState(null);
-
-  // Handle successful geolocation
-  const handleLocationSuccess = async (position) => {
-    const newLat = position.coords.latitude;
-    const newLon = position.coords.longitude;
-    const now = Date.now();
-    // ...existing code...
-    // (move all code from previous handleLocationSuccess here)
-    // ...existing code...
-  };
-
-  // Handle geolocation errors
-  const handleLocationError = (error) => {
-    let errorMessage = 'Location access denied';
-    // ...existing code...
-    // (move all code from previous handleLocationError here)
-    // ...existing code...
-  };
-
-  // Start location tracking
-  const startTracking = () => {
-    if (!navigator.geolocation) {
-      setLocationError('Geolocation is not supported by this browser');
-      return;
-    }
-    setIsTracking(true);
-    setLocationError(null);
-    navigator.geolocation.getCurrentPosition(
-      handleLocationSuccess,
-      handleLocationError,
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 60000 // Cache for 1 minute
-      }
-    );
-    const intervalId = setInterval(() => {
-      navigator.geolocation.getCurrentPosition(
-        handleLocationSuccess,
-        handleLocationError,
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0 // Don't use cached position for periodic checks
-        }
-      );
-    }, UPDATE_INTERVAL);
-    setTrackingInterval(intervalId);
-    return intervalId;
-  };
-
-  // Stop location tracking
-  const stopTracking = () => {
-    if (trackingInterval) {
-      clearInterval(trackingInterval);
-      setTrackingInterval(null);
-    }
-    setIsTracking(false);
-  };
-
-
-  // Start/stop tracking when isCheckedIn changes
-  useEffect(() => {
-    if (isCheckedIn && !isTracking) {
-      setLocationError(null);
-      startTracking();
-      console.log('Started location tracking after check-in.');
-    }
-    if (!isCheckedIn && isTracking) {
-      stopTracking();
-      setLocationError('Location tracking requires check-in. Please check in first.');
-      console.log('Stopped location tracking after check-out.');
-    }
-  }, [isCheckedIn, isTracking]);
-  // Expose refetchAttendanceStatus for check-in/check-out actions
-  return {
-    currentLocation,
-    locationError,
-    isTracking,
-    startTracking,
-    stopTracking,
-    refetchAttendanceStatus,
-    isCheckedIn
-  };
 
   // Minimum distance threshold for location updates (in meters)
+  const LOCATION_THRESHOLD = 100;
+  
+  // Time interval for periodic updates (30 minutes in milliseconds)
+  const UPDATE_INTERVAL = 30 * 60 * 1000; // 30 minutes
+  
+  // Reference to tracking interval
+  const [trackingInterval, setTrackingInterval] = useState(null);
 
   // Calculate distance between two points using Haversine formula
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -159,86 +55,151 @@ export const useLocationTracker = (user) => {
 
   // Send location update to backend
   const updateLocationInDatabase = async (position, addressData = null, hasLocationChanged = false) => {
-    if (!isCheckedIn) {
-      setLocationError('Location tracking requires check-in. Please check in first.');
-      console.log('Location update blocked: user is not checked in.');
-      stopTracking();
-      return;
-    }
-    const newLat = position.coords.latitude;
-    const newLon = position.coords.longitude;
-    let shouldUpdate = false;
-    let overwrite = false;
-    if (!lastUpdate) {
-      // First update
-      shouldUpdate = true;
-      overwrite = false;
-    } else {
-      const now = new Date();
-      const timeSinceLastUpdate = now - lastUpdate;
-      if (lastCoords) {
-        const dist = calculateDistance(lastCoords.lat, lastCoords.lon, newLat, newLon);
-        if (dist < LOCATION_THRESHOLD) {
-          // Same location, only update if 30 min passed
-          if (timeSinceLastUpdate >= UPDATE_INTERVAL) {
-            shouldUpdate = true;
-            overwrite = true;
-          }
-        } else {
-          // Location changed significantly
-          shouldUpdate = true;
-          overwrite = false;
-        }
-      } else {
-        // No previous coords
-        shouldUpdate = true;
-        overwrite = false;
-      }
-    }
-    if (!shouldUpdate) {
-      console.log('No location update needed.');
-      return;
-    }
     try {
       const locationData = {
-        latitude: newLat,
-        longitude: newLon,
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
         accuracy: position.coords.accuracy || 0,
-        hasLocationChanged: !overwrite,
-        overwrite,
+        hasLocationChanged, // Indicate if this is a new location or time-based update
         ...addressData
       };
-      console.log('Sending location update:', locationData);
+
       await api.post('/location/update', locationData);
+      
       setCurrentLocation({
-        latitude: newLat,
-        longitude: newLon,
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
         timestamp: new Date(),
         accuracy: position.coords.accuracy
       });
+      
       setLastUpdate(new Date());
-      setLastCoords({ lat: newLat, lon: newLon });
-      console.log('Location update successful.');
+      
     } catch (error) {
-      console.error('Error updating location:', error);
+      // Handle specific case when user is not checked in
       if (error.response?.data?.requiresCheckIn) {
+        console.log('Location tracking requires check-in. Stopping tracking.');
         setLocationError('Location tracking requires check-in. Please check in first.');
-        stopTracking();
-        console.log('Location update failed: requires check-in. Stopping tracking.');
+        stopTracking(); // Stop tracking if not checked in
       } else {
+        console.error('Error updating location:', error);
         setLocationError('Failed to update location in database');
-        console.log('Location update failed: other error.');
       }
     }
   };
 
+  // Handle successful geolocation
+  const handleLocationSuccess = async (position) => {
+    const newLat = position.coords.latitude;
+    const newLon = position.coords.longitude;
+    const now = Date.now();
+    
+    // Check if enough time has passed for a periodic update (30 minutes)
+    const timeSinceLastUpdate = lastUpdate ? now - lastUpdate.getTime() : UPDATE_INTERVAL;
+    const shouldUpdateByTime = timeSinceLastUpdate >= UPDATE_INTERVAL;
+    
+    // Check if location has changed significantly
+    let hasLocationChanged = false;
+    if (currentLocation) {
+      const distance = calculateDistance(
+        currentLocation.latitude,
+        currentLocation.longitude,
+        newLat,
+        newLon
+      );
+      hasLocationChanged = distance >= LOCATION_THRESHOLD;
+    } else {
+      hasLocationChanged = true; // First location update
+    }
+    
+    // Update if:
+    // 1. It's the first location update, OR
+    // 2. 30 minutes have passed (regardless of location change), OR
+    // 3. Location has changed significantly
+    if (!currentLocation || shouldUpdateByTime || hasLocationChanged) {
+      // Get address information
+      const addressData = await getAddressFromCoordinates(newLat, newLon);
+      
+      // Send location update with change indicator
+      await updateLocationInDatabase(position, addressData, hasLocationChanged);
+      
+      setLocationError(null);
+    }
+  };
 
+  // Handle geolocation errors
+  const handleLocationError = (error) => {
+    let errorMessage = 'Location access denied';
+    
+    switch (error.code) {
+      case error.PERMISSION_DENIED:
+        errorMessage = 'Location access denied by user';
+        break;
+      case error.POSITION_UNAVAILABLE:
+        errorMessage = 'Location information unavailable';
+        break;
+      case error.TIMEOUT:
+        errorMessage = 'Location request timed out';
+        break;
+      default:
+        errorMessage = 'Unknown location error';
+    }
+    
+    console.error('Location error:', errorMessage);
+    setLocationError(errorMessage);
+  };
+
+  // Start location tracking
+  const startTracking = () => {
+    if (!navigator.geolocation) {
+      setLocationError('Geolocation is not supported by this browser');
+      return;
+    }
+
+    setIsTracking(true);
+    setLocationError(null);
+
+    // Get initial location
+    navigator.geolocation.getCurrentPosition(
+      handleLocationSuccess,
+      handleLocationError,
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 60000 // Cache for 1 minute
+      }
+    );
+
+    // Set up interval to check location every 30 minutes
+    const intervalId = setInterval(() => {
+      navigator.geolocation.getCurrentPosition(
+        handleLocationSuccess,
+        handleLocationError,
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0 // Don't use cached position for periodic checks
+        }
+      );
+    }, UPDATE_INTERVAL);
+
+    setTrackingInterval(intervalId);
+    return intervalId;
+  };
+
+  // Stop location tracking
+  const stopTracking = () => {
+    if (trackingInterval) {
+      clearInterval(trackingInterval);
+      setTrackingInterval(null);
+    }
+    setIsTracking(false);
+  };
 
   // Auto-start tracking when user logs in
   useEffect(() => {
-    if (user && !isTracking) {
-      startTracking();
-    }
+    // Don't automatically start tracking when user is authenticated
+    // Location tracking should only start when explicitly called (after check-in)
     
     // Cleanup on unmount or user logout
     return () => {
@@ -311,8 +272,6 @@ export const useLocationTracker = (user) => {
     isTracking,
     lastUpdate,
     startTracking,
-    stopTracking,
-    isCheckedIn,
-    refetchAttendanceStatus
+    stopTracking
   };
 };

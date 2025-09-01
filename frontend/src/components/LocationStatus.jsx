@@ -6,7 +6,7 @@ const LocationStatus = () => {
   const { locationTracker, user } = useAuth();
   const [isRetrying, setIsRetrying] = useState(false);
 
-  const { currentLocation, locationError, isTracking, startTracking, isCheckedIn } = locationTracker || {};
+  const { currentLocation, locationError, isTracking, startTracking } = locationTracker || {};
 
   const retryLocationAccess = async () => {
     setIsRetrying(true);
@@ -42,34 +42,20 @@ const LocationStatus = () => {
     }
   };
 
-  // const getStatusColor = () => {
-  // if (locationError) return "bg-red-500";
-  // if (isCheckedIn && isTracking && !locationError) return "bg-green-500";
-  // return "bg-gray-400";
-  // };
-
-  // const getStatusText = () => {
-  // // Only allow 'Active' or 'Inactive' for status
-  // if (isCheckedIn && isTracking && !locationError) return "Active";
-  // return "Inactive";
-  // };
-
   const getStatusColor = () => {
-  if (!isCheckedIn) return "bg-gray-400"; // User not checked in → gray
-  if (isCheckedIn && isTracking && !locationError) return "bg-green-500"; // Checked in + tracking → green
-  if (isCheckedIn && !isTracking) return "bg-yellow-500"; // Checked in but not tracking → yellow
-  if (locationError) return "bg-red-500"; // Error → red
-  return "bg-gray-400"; // fallback
-};
+    if (locationError) return "bg-red-500";
+    if (isTracking && currentLocation) return "bg-green-500";
+    if (isTracking) return "bg-yellow-400 animate-pulse";
+    return "bg-gray-400";
+  };
 
-const getStatusText = () => {
-  if (!isCheckedIn) return "Inactive"; // Not checked in
-  if (isCheckedIn && isTracking && !locationError) return "Active"; // Checked in + tracking
-  if (isCheckedIn && !isTracking) return "Pending"; // Checked in but tracking not started
-  if (locationError) return "Error"; // Some location error
-  return "Inactive"; // fallback
-};
-
+  const getStatusText = () => {
+    if (locationError && locationError.includes("check-in")) return "Requires Check-in";
+    if (locationError) return "Location Error";
+    if (isTracking && currentLocation) return "Active";
+    if (isTracking) return "Getting Location...";
+    return "Inactive";
+  };
 
   if (!user) return null;
 
@@ -78,13 +64,9 @@ const getStatusText = () => {
       <div className="flex gap-5">
         <div className="flex items-center gap-3">
           <div className={`w-3 h-3 rounded-full ${getStatusColor()}`}></div>
-          {getStatusText() === "Active" ? (
-            <CheckCircle className="w-5 h-5 text-green-500" />
-          ) : (
-            <MapPin className="w-5 h-5 text-gray-400" />
-          )}
           <span className="font-medium text-gray-700">{getStatusText()}</span>
         </div>
+
         {!isTracking && (
          <button
             onClick={retryLocationAccess}

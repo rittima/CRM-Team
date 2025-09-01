@@ -2,36 +2,6 @@ import Location from '../model/Location.js';
 import User from '../model/User.js';
 import Attendance from '../model/Attendance.js';
 
-// Clear only inactive location records (Admin/HR)
-export const clearInactiveLocationRecords = async (req, res) => {
-  try {
-    // Find all inactive location records
-    const inactiveRecords = await Location.find({ isActive: false });
-    const inactiveUserIds = [...new Set(inactiveRecords.map(r => r.userId?.toString()))];
-    // Delete inactive location records
-    const result = await Location.deleteMany({ isActive: false });
-
-    // For each user, check if they have any active location records left
-    let clearedUserCount = 0;
-    for (const userId of inactiveUserIds) {
-      const activeCount = await Location.countDocuments({ userId, isActive: true });
-      if (activeCount === 0) {
-        await User.findByIdAndUpdate(userId, { $unset: { currentLocation: "" } });
-        clearedUserCount++;
-      }
-    }
-
-    res.status(200).json({
-      message: 'Inactive location records cleared successfully',
-      deletedCount: result.deletedCount,
-      clearedUsers: clearedUserCount
-    });
-  } catch (error) {
-    console.error('Error clearing inactive location records:', error);
-    res.status(500).json({ message: 'Failed to clear inactive location records' });
-  }
-};
-
 // Calculate distance between two points using Haversine formula
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371000; // Earth's radius in meters
@@ -69,6 +39,7 @@ export const updateLocation = async (req, res) => {
     });
 
     if (!currentAttendance) {
+      
       return res.status(403).json({ 
         message: 'Location tracking is only active during work hours. Please check in first.',
         requiresCheckIn: true

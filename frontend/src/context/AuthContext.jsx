@@ -11,31 +11,35 @@ export const AuthProvider = ({ children }) => {
   // Initialize location tracking for authenticated users
   const locationTracker = useLocationTracker(user);
 
-    useEffect(() => {
+  useEffect(() => {
     const load = async () => {
-      const token = localStorage.getItem("token");
-      
-      if (!token) {
-        setUser(null) || setUser(undefined);
-
-        setBootLoading(false);
-        return;
-      }
-
+      // First try to authenticate with cookies (no localStorage check needed)
       try {
         const res = await api.get("/auth/me");
         setUser(res.data);
-        // console.log("User data loaded:", res.data.userId);
-
+        
+        // Check if user is currently checked in and start location tracking
         await checkAttendanceAndStartTracking(res.data._id);
+        setBootLoading(false);
+        return;
       } catch (e) {
-        localStorage.removeItem("token");
-        setUser(null);
+        // If cookie auth fails, try localStorage token
+        const token = localStorage.getItem("token");
+        if (token) {
+          try {
+            const res = await api.get("/auth/me");
+            setUser(res.data);
+            await checkAttendanceAndStartTracking(res.data._id);
+          } catch (e2) {
+            localStorage.removeItem("token");
+            setUser(null);
+          }
+        } else {
+          setUser(null);
+        }
       }
-
       setBootLoading(false);
     };
-
     load();
   }, []);
 
