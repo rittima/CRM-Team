@@ -19,8 +19,7 @@ export const HrTaskForm = ({onClose}) => {
     try {
       const response = await axios.post(
         "/hr-tasks/",
-        { title, description, taskCompletionTime, assignedTo },
-        { headers: { Authorization: `Bearer ${user.token}` } }
+        { title, description, taskCompletionTime, assignedTo }
       );
 
       if (response.data.success) {
@@ -31,6 +30,7 @@ export const HrTaskForm = ({onClose}) => {
         setAssignedTo("");
       }
     } catch (error) {
+      console.error('HR Task Assignment Error:', error);
       setMessage(error.response?.data?.message || error.message);
     } finally {
       setLoading(false);
@@ -62,7 +62,7 @@ export const HrTaskForm = ({onClose}) => {
             type="text"
             placeholder="Assign To (Employee ID)"
             value={assignedTo}
-            onChange={(e) => setAssignedTo(e.target.value)}
+            onChange={(e) => setAssignedTo(e.target.value.toLocaleUpperCase())}
             required
             disabled={loading}
             className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg text-base focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 placeholder-gray-400 disabled:bg-gray-100 disabled:cursor-not-allowed"
@@ -72,7 +72,7 @@ export const HrTaskForm = ({onClose}) => {
             type="text"
             placeholder="Task Title"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => setTitle(e.target.value.toLocaleUpperCase())}
             required
             disabled={loading}
             className="w-full px-4 py-3 border-2 border-gray-400 rounded-lg text-base focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 placeholder-gray-400 disabled:bg-gray-100 disabled:cursor-not-allowed"

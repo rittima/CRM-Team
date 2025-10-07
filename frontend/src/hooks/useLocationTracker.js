@@ -32,23 +32,45 @@ export const useLocationTracker = (user) => {
   // Get address from coordinates (reverse geocoding)
   const getAddressFromCoordinates = async (latitude, longitude) => {
     try {
+      console.log('🌍 Attempting to get address for coordinates:', { latitude, longitude });
+      
       // Using OpenStreetMap Nominatim API (free alternative to Google Maps)
+      // Add a small delay to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&limit=1`
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&limit=1&addressdetails=1`,
+        {
+          headers: {
+            'User-Agent': 'CRM-Team-Location-Tracker' // Required by Nominatim
+          }
+        }
       );
+      
+      if (!response.ok) {
+        console.warn('🚫 Nominatim API response not ok:', response.status, response.statusText);
+        return null;
+      }
+      
       const data = await response.json();
+      console.log('📍 Raw address data from Nominatim:', data);
       
       if (data && data.display_name) {
-        return {
+        const addressInfo = {
           address: data.display_name,
-          city: data.address?.city || data.address?.town || data.address?.village || '',
-          state: data.address?.state || '',
+          city: data.address?.city || data.address?.town || data.address?.village || data.address?.municipality || '',
+          state: data.address?.state || data.address?.region || '',
           country: data.address?.country || ''
         };
+        
+        console.log('✅ Parsed address info:', addressInfo);
+        return addressInfo;
+      } else {
+        console.warn('⚠️ No address data found in response');
+        return null;
       }
-      return null;
     } catch (error) {
-      console.warn('Error getting address:', error);
+      console.error('❌ Error getting address from coordinates:', error);
       return null;
     }
   };
@@ -64,7 +86,10 @@ export const useLocationTracker = (user) => {
         ...addressData
       };
 
-      await api.post('/location/update', locationData);
+      console.log('📤 Sending location data to backend:', locationData);
+      
+      const response = await api.post('/location/update', locationData);
+      console.log('✅ Location update response:', response.data);
       
       setCurrentLocation({
         latitude: position.coords.latitude,
@@ -82,7 +107,7 @@ export const useLocationTracker = (user) => {
         setLocationError('Location tracking requires check-in. Please check in first.');
         stopTracking(); // Stop tracking if not checked in
       } else {
-        console.error('Error updating location:', error);
+        console.error('❌ Error updating location:', error);
         setLocationError('Failed to update location in database');
       }
     }
@@ -93,6 +118,12 @@ export const useLocationTracker = (user) => {
     const newLat = position.coords.latitude;
     const newLon = position.coords.longitude;
     const now = Date.now();
+    
+    console.log('📍 New location received:', { 
+      latitude: newLat, 
+      longitude: newLon, 
+      accuracy: position.coords.accuracy 
+    });
     
     // Check if enough time has passed for a periodic update (30 minutes)
     const timeSinceLastUpdate = lastUpdate ? now - lastUpdate.getTime() : UPDATE_INTERVAL;
@@ -108,22 +139,40 @@ export const useLocationTracker = (user) => {
         newLon
       );
       hasLocationChanged = distance >= LOCATION_THRESHOLD;
+      console.log('📏 Distance from last location:', distance, 'meters. Threshold:', LOCATION_THRESHOLD);
     } else {
       hasLocationChanged = true; // First location update
+      console.log('🆕 First location update');
     }
+    
+    console.log('⏰ Update decision:', {
+      shouldUpdateByTime,
+      hasLocationChanged,
+      timeSinceLastUpdate: Math.round(timeSinceLastUpdate / 1000 / 60) + ' minutes'
+    });
     
     // Update if:
     // 1. It's the first location update, OR
     // 2. 30 minutes have passed (regardless of location change), OR
     // 3. Location has changed significantly
     if (!currentLocation || shouldUpdateByTime || hasLocationChanged) {
+      console.log('🔄 Proceeding with location update...');
+      
       // Get address information
       const addressData = await getAddressFromCoordinates(newLat, newLon);
+      
+      if (addressData) {
+        console.log('📍 Address resolved successfully:', addressData.address);
+      } else {
+        console.warn('⚠️ Could not resolve address for coordinates');
+      }
       
       // Send location update with change indicator
       await updateLocationInDatabase(position, addressData, hasLocationChanged);
       
       setLocationError(null);
+    } else {
+      console.log('⏸️ Skipping location update (no significant change and time threshold not met)');
     }
   };
 

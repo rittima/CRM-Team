@@ -32,8 +32,10 @@ const TaskCard = ({ onClose, onSave, taskName, taskDesc, timeTaken }) => {
       if (response.data.success) {
         // Call the original onSave callback if provided
         if (typeof onSave === 'function') {
-          onSave(title, description, timeTaken);
+          // onSave(title, description, timeTaken);
+          onSave(response.data.task); 
         }
+
         
         // Clear form and close modal
         setTitle("");
@@ -63,7 +65,7 @@ const TaskCard = ({ onClose, onSave, taskName, taskDesc, timeTaken }) => {
             type="text"
             placeholder="Task Title"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => setTitle(e.target.value.toLocaleUpperCase())}
             className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg text-base focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 placeholder-gray-400 disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60"
             disabled={isLoading}
           />

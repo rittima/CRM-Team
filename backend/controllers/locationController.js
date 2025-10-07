@@ -263,6 +263,9 @@ export const getAllEmployeeLocations = async (req, res) => {
   try {
     console.log('🔍 getAllEmployeeLocations called by user:', req.user?.name, 'Role:', req.user?.role);
     
+    // Get today's date for attendance check
+    const today = new Date().toISOString().split('T')[0];
+    
     // Get latest location for each user (both active and inactive)
     const locations = await Location.aggregate([
       {
@@ -286,6 +289,25 @@ export const getAllEmployeeLocations = async (req, res) => {
         $unwind: '$user'
       },
       {
+        $lookup: {
+          from: 'attendances',
+          let: { userId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$userId', '$$userId'] },
+                    { $eq: ['$date', today] }
+                  ]
+                }
+              }
+            }
+          ],
+          as: 'todayAttendance'
+        }
+      },
+      {
         $project: {
           _id: '$latestLocation._id',
           userId: '$latestLocation.userId',
@@ -298,7 +320,14 @@ export const getAllEmployeeLocations = async (req, res) => {
           state: '$latestLocation.state',
           country: '$latestLocation.country',
           timestamp: '$latestLocation.timestamp',
-          isActive: '$latestLocation.isActive'
+          isActive: '$latestLocation.isActive',
+          attendanceStatus: {
+            $cond: {
+              if: { $gt: [{ $size: '$todayAttendance' }, 0] },
+              then: { $arrayElemAt: ['$todayAttendance.status', 0] },
+              else: 'not-checked-in'
+            }
+          }
         }
       },
       {
@@ -329,12 +358,14 @@ export const getAllEmployeeLocations = async (req, res) => {
         currentLocation: user.currentLocation,
         lastLocationUpdate: locationData ? locationData.timestamp : null,
         latestLocationData: locationData || null,
-        isLocationActive: locationData ? locationData.isActive : false
+        isLocationActive: locationData ? locationData.isActive : false,
+        attendanceStatus: locationData ? locationData.attendanceStatus : 'not-checked-in'
       };
       
       console.log(`📊 User ${user.name}:`, {
         hasCurrentLocation: !!user.currentLocation,
         hasLocationData: !!locationData,
+        attendanceStatus: result.attendanceStatus,
         currentLocation: user.currentLocation
       });
       

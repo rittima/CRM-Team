@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import api from "../../services/axios";
 import LocationFilters from "./LocationFilters";
+import { RefreshCw, Trash2 } from "lucide-react";
 
 const LocationTab = () => {
   const [employeeLocations, setEmployeeLocations] = useState([]);
@@ -121,8 +122,7 @@ const LocationTab = () => {
     try {
       // First, identify inactive employees locally
       const activeEmployees = employeeLocations.filter(emp => {
-        if (!emp.currentLocation) return false;
-        const status = getLocationStatus(emp.currentLocation);
+        const status = getLocationStatus(emp.currentLocation, emp.attendanceStatus);
         return status.status === 'active';
       });
 
@@ -175,27 +175,26 @@ const LocationTab = () => {
 
 
   // Get location status
-  const getLocationStatus = (currentLocation) => {
-    if (!currentLocation) return { status: 'inactive', color: 'bg-gray-500', text: 'No Location' };
-    
-    const lastUpdated = new Date(currentLocation.lastUpdated);
-    const now = new Date();
-    const diffInMinutes = (now - lastUpdated) / (1000 * 60);
-    
-    if (diffInMinutes <= 30) {
-      return { status: 'active', color: 'bg-green-500', text: 'Active' };
-    } else if (diffInMinutes <= 120) {
-      return { status: 'recent', color: 'bg-yellow-500', text: 'Recent' };
-    } else {
-      return { status: 'inactive', color: 'bg-red-500', text: 'Inactive' };
+  const getLocationStatus = (currentLocation, attendanceStatus) => {
+    // Check if employee is checked in and has recent location data
+    if (attendanceStatus === 'checked-in' && currentLocation) {
+      const lastUpdated = new Date(currentLocation.lastUpdated);
+      const now = new Date();
+      const diffInMinutes = (now - lastUpdated) / (1000 * 60);
+      
+      if (diffInMinutes <= 30) {
+        return { status: 'active', color: 'bg-white text-green-500 border-green-500 border-2 border-solid', text: 'Active' };
+      }
     }
+    
+    // All other cases are inactive
+    return { status: 'inactive', color: 'bg-white text-red-500 border-red-500 border-2 border-solid', text: 'Inactive' };
   };
 
   // Stats
   const totalEmployees = employeeLocations.length;
   const activeLocations = employeeLocations.filter(emp => {
-    if (!emp.currentLocation) return false;
-    const status = getLocationStatus(emp.currentLocation);
+    const status = getLocationStatus(emp.currentLocation, emp.attendanceStatus);
     return status.status === 'active';
   }).length;
   const inactiveLocations = totalEmployees - activeLocations;
@@ -210,16 +209,16 @@ const LocationTab = () => {
           <button
             onClick={refreshLocations}
             disabled={locationsLoading}
-            className="px-3 py-2 rounded bg-blue-100 text-blue-800 font-medium hover:bg-blue-200 transition disabled:opacity-50 text-sm"
+            className="px-3 py-2 flex gap-2 rounded bg-blue-100 text-blue-800 font-medium hover:bg-blue-200 transition disabled:opacity-50 text-sm"
           >
-            {locationsLoading ? "🔄 Refreshing..." : "🔄 Refresh"}
+            {locationsLoading ? <><RefreshCw className="animate-spin w-5 h-5" /> Refreshing...</> : <><RefreshCw className="w-5 h-5" /> Refresh</>}
           </button>
           <button
             onClick={clearAllInactiveData}
             disabled={locationsLoading}
-            className="px-3 py-2 rounded bg-red-100 text-red-800 font-medium hover:bg-red-200 transition disabled:opacity-50 text-sm"
+            className="px-3 py-2 rounded flex gap-2 bg-red-100 text-red-800 font-medium hover:bg-red-200 transition disabled:opacity-50 text-sm"
           >
-            🗑️ Clear All
+            <Trash2 className="w-5 h-5" /> Clear All
           </button>
         </div>
       </div>
@@ -284,7 +283,7 @@ const LocationTab = () => {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {getFilteredLocations().map(emp => {
-                    const locationStatus = getLocationStatus(emp.currentLocation);
+                    const locationStatus = getLocationStatus(emp.currentLocation, emp.attendanceStatus);
                     return (
                       <React.Fragment key={emp._id}>
                         <tr className="hover:bg-gray-50">
@@ -298,7 +297,7 @@ const LocationTab = () => {
                             <div className="text-sm font-mono text-gray-700">{emp.employeeId}</div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium text-white ${locationStatus.color}`}>
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${locationStatus.color}`}>
                               {locationStatus.text}
                             </span>
                           </td>

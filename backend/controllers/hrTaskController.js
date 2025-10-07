@@ -4,13 +4,21 @@ import User from "../model/User.js";
 // 👉 HR assigns a task to employee route: POST /api/hr-tasks/
 export const assignTask = async (req, res) => {
   try {
+    console.log('🎯 HR Task Assignment Request:', {
+      user: req.user ? { id: req.user._id, name: req.user.name, role: req.user.role } : 'No user',
+      body: req.body
+    });
+
     const { title, description, taskCompletionTime, assignedTo } = req.body;
 
     // 1️⃣ Find the employee by employeeId
     const employee = await User.findOne({ employeeId: assignedTo });
     if (!employee) {
+      console.log('❌ Employee not found:', assignedTo);
       return res.status(404).json({ success: false, message: "Employee not found" });
     }
+
+    console.log('✅ Employee found:', { employeeId: employee.employeeId, name: employee.name });
 
     // 2️⃣ Prepare task data
     const task = new HRTask({
@@ -20,16 +28,18 @@ export const assignTask = async (req, res) => {
       assignedTo: employee.employeeId, // store employee code
       assignedToName: employee.name,
       assignedToEmail: employee.email,
-      assignedBy: req.user.id,
+      assignedBy: req.user._id,
       assignedByName: req.user.name,
       assignedByEmail: req.user.email,
     });
 
     // 3️⃣ Save task
     await task.save();
+    console.log('✅ Task saved successfully:', task._id);
 
     res.status(201).json({ success: true, message: "Task assigned successfully", task });
   } catch (error) {
+    console.error('❌ HR Task Assignment Error:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
